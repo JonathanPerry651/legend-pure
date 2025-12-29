@@ -1,0 +1,122 @@
+load("@rules_java//java:defs.bzl", "java_library", "java_test")
+
+java_library(
+    name = "AbstractTestNot_lib",
+    srcs = ["AbstractTestNot.java"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-bootstrap-generator",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests:AbstractPureTestWithCoreCompiled_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_googlecode_json_simple_json_simple",
+        "@maven//:commons_codec_commons_codec",
+        "@maven//:commons_io_commons_io",
+        "@maven//:io_prometheus_simpleclient",
+        "@maven//:junit_junit",
+        "@maven//:org_antlr_antlr4_runtime",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@maven//:org_eclipse_collections_eclipse_collections_testutils",
+        "@maven//:org_slf4j_slf4j_api",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+java_test(
+    name = "AbstractTestNot",
+    test_class = "org.finos.legend.pure.m3.tests.function.base._boolean.AbstractTestNot",
+    runtime_deps = [":AbstractTestNot_lib"],
+)
+
+java_library(
+    name = "AbstractTestAnd_lib",
+    srcs = ["AbstractTestAnd.java"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-bootstrap-generator",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests:AbstractPureTestWithCoreCompiled_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_googlecode_json_simple_json_simple",
+        "@maven//:commons_codec_commons_codec",
+        "@maven//:commons_io_commons_io",
+        "@maven//:io_prometheus_simpleclient",
+        "@maven//:junit_junit",
+        "@maven//:org_antlr_antlr4_runtime",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@maven//:org_eclipse_collections_eclipse_collections_testutils",
+        "@maven//:org_slf4j_slf4j_api",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+java_test(
+    name = "AbstractTestAnd",
+    test_class = "org.finos.legend.pure.m3.tests.function.base._boolean.AbstractTestAnd",
+    runtime_deps = [":AbstractTestAnd_lib"],
+)
+
+java_library(
+    name = "AbstractTestOr_lib",
+    srcs = ["AbstractTestOr.java"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-bootstrap-generator",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests:AbstractPureTestWithCoreCompiled_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_googlecode_json_simple_json_simple",
+        "@maven//:commons_codec_commons_codec",
+        "@maven//:commons_io_commons_io",
+        "@maven//:io_prometheus_simpleclient",
+        "@maven//:junit_junit",
+        "@maven//:org_antlr_antlr4_runtime",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@maven//:org_eclipse_collections_eclipse_collections_testutils",
+        "@maven//:org_slf4j_slf4j_api",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+java_test(
+    name = "AbstractTestOr",
+    test_class = "org.finos.legend.pure.m3.tests.function.base._boolean.AbstractTestOr",
+    runtime_deps = [":AbstractTestOr_lib"],
+)
+
+java_library(
+    name = "AbstractTestPrecedence_lib",
+    srcs = ["AbstractTestPrecedence.java"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-bootstrap-generator",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests:AbstractPureTestWithCoreCompiled_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_googlecode_json_simple_json_simple",
+        "@maven//:commons_codec_commons_codec",
+        "@maven//:commons_io_commons_io",
+        "@maven//:io_prometheus_simpleclient",
+        "@maven//:junit_junit",
+        "@maven//:org_antlr_antlr4_runtime",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@maven//:org_eclipse_collections_eclipse_collections_testutils",
+        "@maven//:org_slf4j_slf4j_api",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+java_test(
+    name = "AbstractTestPrecedence",
+    test_class = "org.finos.legend.pure.m3.tests.function.base._boolean.AbstractTestPrecedence",
+    runtime_deps = [":AbstractTestPrecedence_lib"],
+)
+

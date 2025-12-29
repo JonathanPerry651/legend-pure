@@ -1,0 +1,426 @@
+load("@rules_java//java:defs.bzl", "java_library", "java_test")
+
+java_library(
+    name = "TestParsing_lib",
+    srcs = ["TestParsing.java"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-bootstrap-generator",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3:m3_kernel",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests:AbstractPureTestWithCoreCompiledPlatform_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_googlecode_json_simple_json_simple",
+        "@maven//:commons_codec_commons_codec",
+        "@maven//:commons_io_commons_io",
+        "@maven//:io_prometheus_simpleclient",
+        "@maven//:junit_junit",
+        "@maven//:org_antlr_antlr4_runtime",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@maven//:org_eclipse_collections_eclipse_collections_testutils",
+        "@maven//:org_slf4j_slf4j_api",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+java_test(
+    name = "TestParsing",
+    test_class = "org.finos.legend.pure.m3.serialization.grammar.v1.TestParsing",
+    runtime_deps = [":TestParsing_lib"],
+)
+
+java_library(
+    name = "TestDateTimeParsing_lib",
+    srcs = ["TestDateTimeParsing.java"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-bootstrap-generator",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/serialization/grammar/v1:AbstractPrimitiveParsingTest_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_googlecode_json_simple_json_simple",
+        "@maven//:commons_codec_commons_codec",
+        "@maven//:commons_io_commons_io",
+        "@maven//:io_prometheus_simpleclient",
+        "@maven//:junit_junit",
+        "@maven//:org_antlr_antlr4_runtime",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@maven//:org_eclipse_collections_eclipse_collections_testutils",
+        "@maven//:org_slf4j_slf4j_api",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+java_test(
+    name = "TestDateTimeParsing",
+    test_class = "org.finos.legend.pure.m3.serialization.grammar.v1.TestDateTimeParsing",
+    runtime_deps = [":TestDateTimeParsing_lib"],
+)
+
+java_library(
+    name = "TestStrictDateParsing_lib",
+    srcs = ["TestStrictDateParsing.java"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-bootstrap-generator",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3:m3_kernel",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/serialization/grammar/v1:AbstractPrimitiveParsingTest_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_googlecode_json_simple_json_simple",
+        "@maven//:commons_codec_commons_codec",
+        "@maven//:commons_io_commons_io",
+        "@maven//:io_prometheus_simpleclient",
+        "@maven//:junit_junit",
+        "@maven//:org_antlr_antlr4_runtime",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@maven//:org_eclipse_collections_eclipse_collections_testutils",
+        "@maven//:org_slf4j_slf4j_api",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+java_test(
+    name = "TestStrictDateParsing",
+    test_class = "org.finos.legend.pure.m3.serialization.grammar.v1.TestStrictDateParsing",
+    runtime_deps = [":TestStrictDateParsing_lib"],
+)
+
+java_library(
+    name = "TestIntegerParsing_lib",
+    srcs = ["TestIntegerParsing.java"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-bootstrap-generator",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/serialization/grammar/v1:AbstractPrimitiveParsingTest_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_googlecode_json_simple_json_simple",
+        "@maven//:commons_codec_commons_codec",
+        "@maven//:commons_io_commons_io",
+        "@maven//:io_prometheus_simpleclient",
+        "@maven//:junit_junit",
+        "@maven//:org_antlr_antlr4_runtime",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@maven//:org_eclipse_collections_eclipse_collections_testutils",
+        "@maven//:org_slf4j_slf4j_api",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+java_test(
+    name = "TestIntegerParsing",
+    test_class = "org.finos.legend.pure.m3.serialization.grammar.v1.TestIntegerParsing",
+    runtime_deps = [":TestIntegerParsing_lib"],
+)
+
+java_library(
+    name = "TestM3AntlrParser_lib",
+    srcs = ["TestM3AntlrParser.java"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-bootstrap-generator",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3:m3_kernel",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests:AbstractPureTestWithCoreCompiledPlatform_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_googlecode_json_simple_json_simple",
+        "@maven//:commons_codec_commons_codec",
+        "@maven//:commons_io_commons_io",
+        "@maven//:io_prometheus_simpleclient",
+        "@maven//:junit_junit",
+        "@maven//:org_antlr_antlr4_runtime",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@maven//:org_eclipse_collections_eclipse_collections_testutils",
+        "@maven//:org_slf4j_slf4j_api",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+java_test(
+    name = "TestM3AntlrParser",
+    test_class = "org.finos.legend.pure.m3.serialization.grammar.v1.TestM3AntlrParser",
+    runtime_deps = [":TestM3AntlrParser_lib"],
+)
+
+java_library(
+    name = "TestDecimalParsing_lib",
+    srcs = ["TestDecimalParsing.java"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-bootstrap-generator",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/serialization/grammar/v1:AbstractPrimitiveParsingTest_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_googlecode_json_simple_json_simple",
+        "@maven//:commons_codec_commons_codec",
+        "@maven//:commons_io_commons_io",
+        "@maven//:io_prometheus_simpleclient",
+        "@maven//:junit_junit",
+        "@maven//:org_antlr_antlr4_runtime",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@maven//:org_eclipse_collections_eclipse_collections_testutils",
+        "@maven//:org_slf4j_slf4j_api",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+java_test(
+    name = "TestDecimalParsing",
+    test_class = "org.finos.legend.pure.m3.serialization.grammar.v1.TestDecimalParsing",
+    runtime_deps = [":TestDecimalParsing_lib"],
+)
+
+java_library(
+    name = "TestStringParsing_lib",
+    srcs = ["TestStringParsing.java"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-bootstrap-generator",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/serialization/grammar/v1:AbstractPrimitiveParsingTest_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_googlecode_json_simple_json_simple",
+        "@maven//:commons_codec_commons_codec",
+        "@maven//:commons_io_commons_io",
+        "@maven//:io_prometheus_simpleclient",
+        "@maven//:junit_junit",
+        "@maven//:org_antlr_antlr4_runtime",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@maven//:org_eclipse_collections_eclipse_collections_testutils",
+        "@maven//:org_slf4j_slf4j_api",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+java_test(
+    name = "TestStringParsing",
+    test_class = "org.finos.legend.pure.m3.serialization.grammar.v1.TestStringParsing",
+    runtime_deps = [":TestStringParsing_lib"],
+)
+
+java_library(
+    name = "TestDateParsing_lib",
+    srcs = ["TestDateParsing.java"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-bootstrap-generator",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/serialization/grammar/v1:AbstractPrimitiveParsingTest_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_googlecode_json_simple_json_simple",
+        "@maven//:commons_codec_commons_codec",
+        "@maven//:commons_io_commons_io",
+        "@maven//:io_prometheus_simpleclient",
+        "@maven//:junit_junit",
+        "@maven//:org_antlr_antlr4_runtime",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@maven//:org_eclipse_collections_eclipse_collections_testutils",
+        "@maven//:org_slf4j_slf4j_api",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+java_test(
+    name = "TestDateParsing",
+    test_class = "org.finos.legend.pure.m3.serialization.grammar.v1.TestDateParsing",
+    runtime_deps = [":TestDateParsing_lib"],
+)
+
+java_library(
+    name = "TestStrictTimeParsing_lib",
+    srcs = ["TestStrictTimeParsing.java"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-bootstrap-generator",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/serialization/grammar/v1:AbstractPrimitiveParsingTest_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_googlecode_json_simple_json_simple",
+        "@maven//:commons_codec_commons_codec",
+        "@maven//:commons_io_commons_io",
+        "@maven//:io_prometheus_simpleclient",
+        "@maven//:junit_junit",
+        "@maven//:org_antlr_antlr4_runtime",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@maven//:org_eclipse_collections_eclipse_collections_testutils",
+        "@maven//:org_slf4j_slf4j_api",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+java_test(
+    name = "TestStrictTimeParsing",
+    test_class = "org.finos.legend.pure.m3.serialization.grammar.v1.TestStrictTimeParsing",
+    runtime_deps = [":TestStrictTimeParsing_lib"],
+)
+
+java_library(
+    name = "TestLatestDateParsing_lib",
+    srcs = ["TestLatestDateParsing.java"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-bootstrap-generator",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/serialization/grammar/v1:AbstractPrimitiveParsingTest_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_googlecode_json_simple_json_simple",
+        "@maven//:commons_codec_commons_codec",
+        "@maven//:commons_io_commons_io",
+        "@maven//:io_prometheus_simpleclient",
+        "@maven//:junit_junit",
+        "@maven//:org_antlr_antlr4_runtime",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@maven//:org_eclipse_collections_eclipse_collections_testutils",
+        "@maven//:org_slf4j_slf4j_api",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+java_test(
+    name = "TestLatestDateParsing",
+    test_class = "org.finos.legend.pure.m3.serialization.grammar.v1.TestLatestDateParsing",
+    runtime_deps = [":TestLatestDateParsing_lib"],
+)
+
+java_library(
+    name = "TestFloatParsing_lib",
+    srcs = ["TestFloatParsing.java"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-bootstrap-generator",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/serialization/grammar/v1:AbstractPrimitiveParsingTest_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_googlecode_json_simple_json_simple",
+        "@maven//:commons_codec_commons_codec",
+        "@maven//:commons_io_commons_io",
+        "@maven//:io_prometheus_simpleclient",
+        "@maven//:junit_junit",
+        "@maven//:org_antlr_antlr4_runtime",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@maven//:org_eclipse_collections_eclipse_collections_testutils",
+        "@maven//:org_slf4j_slf4j_api",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+java_test(
+    name = "TestFloatParsing",
+    test_class = "org.finos.legend.pure.m3.serialization.grammar.v1.TestFloatParsing",
+    runtime_deps = [":TestFloatParsing_lib"],
+)
+
+java_library(
+    name = "TestByteCompilation_lib",
+    srcs = ["TestByteCompilation.java"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-bootstrap-generator",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests:AbstractPureTestWithCoreCompiledPlatform_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_googlecode_json_simple_json_simple",
+        "@maven//:commons_codec_commons_codec",
+        "@maven//:commons_io_commons_io",
+        "@maven//:io_prometheus_simpleclient",
+        "@maven//:junit_junit",
+        "@maven//:org_antlr_antlr4_runtime",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@maven//:org_eclipse_collections_eclipse_collections_testutils",
+        "@maven//:org_slf4j_slf4j_api",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+java_test(
+    name = "TestByteCompilation",
+    test_class = "org.finos.legend.pure.m3.serialization.grammar.v1.TestByteCompilation",
+    runtime_deps = [":TestByteCompilation_lib"],
+)
+
+java_library(
+    name = "TestBooleanParsing_lib",
+    srcs = ["TestBooleanParsing.java"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-bootstrap-generator",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/serialization/grammar/v1:AbstractPrimitiveParsingTest_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_googlecode_json_simple_json_simple",
+        "@maven//:commons_codec_commons_codec",
+        "@maven//:commons_io_commons_io",
+        "@maven//:io_prometheus_simpleclient",
+        "@maven//:junit_junit",
+        "@maven//:org_antlr_antlr4_runtime",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@maven//:org_eclipse_collections_eclipse_collections_testutils",
+        "@maven//:org_slf4j_slf4j_api",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+java_test(
+    name = "TestBooleanParsing",
+    test_class = "org.finos.legend.pure.m3.serialization.grammar.v1.TestBooleanParsing",
+    runtime_deps = [":TestBooleanParsing_lib"],
+)
+
+java_library(
+    name = "AbstractPrimitiveParsingTest_lib",
+    srcs = ["AbstractPrimitiveParsingTest.java"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-bootstrap-generator",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3:m3_kernel",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests:AbstractPureTestWithCoreCompiled_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_googlecode_json_simple_json_simple",
+        "@maven//:commons_codec_commons_codec",
+        "@maven//:commons_io_commons_io",
+        "@maven//:io_prometheus_simpleclient",
+        "@maven//:junit_junit",
+        "@maven//:org_antlr_antlr4_runtime",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@maven//:org_eclipse_collections_eclipse_collections_testutils",
+        "@maven//:org_slf4j_slf4j_api",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+java_test(
+    name = "AbstractPrimitiveParsingTest",
+    test_class = "org.finos.legend.pure.m3.serialization.grammar.v1.AbstractPrimitiveParsingTest",
+    runtime_deps = [":AbstractPrimitiveParsingTest_lib"],
+)
+

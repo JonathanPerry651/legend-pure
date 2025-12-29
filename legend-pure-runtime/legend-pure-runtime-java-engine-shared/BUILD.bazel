@@ -1,0 +1,41 @@
+load("@rules_java//java:defs.bzl", "java_library", "java_test")
+
+java_library(
+    name = "legend-pure-runtime-java-engine-shared",
+    srcs = [
+        "src/main/java/org/finos/legend/pure/runtime/java/shared/canstreamstate/CanStreamState.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/shared/hash/HashType.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/shared/hash/HashingUtil.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/shared/http/HttpMethod.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/shared/http/HttpRawHelper.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/shared/http/SimpleHttpResponse.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/shared/http/URLScheme.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/shared/identity/IdentityManager.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/shared/listeners/ExecutionEndListener.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/shared/listeners/ExecutionEndListenerState.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/shared/listeners/ExecutionEndListenerStateException.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/shared/listeners/ExecutionListeners.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/shared/listeners/IdentifableExecutionEndListner.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/shared/listeners/IdentifiableExecutionEndListener.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/shared/map/PureMapStats.java",
+    ],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@maven//:org_apache_httpcomponents_httpclient",
+        "@maven//:org_apache_httpcomponents_httpcore",
+        "@maven//:commons_codec_commons_codec",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+java_test(
+    name = "HashingUtilTest",
+    srcs = ["src/test/java/org/finos/legend/pure/runtime/java/shared/hash/HashingUtilTest.java"],
+    deps = [
+        ":legend-pure-runtime-java-engine-shared",
+        "@maven//:junit_junit",
+    ],
+)

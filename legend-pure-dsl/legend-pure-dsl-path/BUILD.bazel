@@ -1,0 +1,46 @@
+load("@rules_java//java:defs.bzl", "java_binary", "java_library")
+
+package(default_visibility = ["//visibility:public"])
+
+java_library(
+    name = "legend-pure-dsl-path",
+    exports = [
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-m2-dsl-path-grammar",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-m2-dsl-path-pure",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-runtime-java-extension-compiled-dsl-path",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-runtime-java-extension-interpreted-dsl-path",
+        ":pure_platform_dsl_path_par_lib",
+    ],
+)
+
+# PAR Generation
+java_binary(
+    name = "PureJarGenerator",
+    main_class = "org.finos.legend.pure.m3.generator.par.PureJarGenerator",
+    runtime_deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-base",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-m2-dsl-path-pure", # Contains resources
+    ],
+)
+
+genrule(
+    name = "pure_platform_dsl_path_par",
+    srcs = [
+         "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-base",
+         "//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-m2-dsl-path-pure",
+    ],
+    outs = ["pure-platform_dsl_path.par"],
+    cmd = """
+        $(location :PureJarGenerator) \
+        0.0.0-SNAPSHOT \
+        platform_dsl_path \
+        $$(dirname $(location pure-platform_dsl_path.par))
+    """,
+    tools = [":PureJarGenerator"],
+)
+
+java_library(
+    name = "pure_platform_dsl_path_par_lib",
+    resources = [":pure_platform_dsl_path_par"],
+    resource_strip_prefix = "legend-pure/legend-pure-dsl/legend-pure-dsl-path",
+)

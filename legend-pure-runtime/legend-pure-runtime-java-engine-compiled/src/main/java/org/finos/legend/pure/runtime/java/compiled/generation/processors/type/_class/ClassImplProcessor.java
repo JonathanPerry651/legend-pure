@@ -167,7 +167,7 @@ public class ClassImplProcessor
                     }
                     propertyString += buildProperty(property, ownerClassName + (ownerTypeParams.isEmpty() ? "" : "<" + ownerTypeParams + ">"), "this", classOwnerId, name, returnType, unresolvedReturnType, returnMultiplicity, processorContext1.getSupport(), includeGettor, processorContext1);
                     return propertyString;
-                }, processorContext, processorSupport) +
+                }, processorContext, processorSupport, CLASS_IMPL_SUFFIX) +
                 buildQualifiedProperties(classGenericType, processorContext, processorSupport) +
                 buildCopy(classGenericType, CLASS_IMPL_SUFFIX, isGetterOverride, processorSupport) +
                 (ClassProcessor.isLazy(_class) ? buildEquality(classGenericType, CLASS_IMPL_SUFFIX, true, false, true, processorContext, processorSupport) : buildEquality(classGenericType, CLASS_IMPL_SUFFIX, false, false, false, processorContext, processorSupport)) +
@@ -528,7 +528,7 @@ public class ClassImplProcessor
         }
     }
 
-    public static String buildSimpleProperties(CoreInstance classGenericType, FullPropertyImplementation propertyImpl, ProcessorContext processorContext, ProcessorSupport processorSupport)
+    public static String buildSimpleProperties(CoreInstance classGenericType, FullPropertyImplementation propertyImpl, ProcessorContext processorContext, ProcessorSupport processorSupport, String implSuffix)
     {
         CoreInstance _class = Instance.getValueForMetaPropertyToOneResolved(classGenericType, M3Properties.rawType, processorSupport);
         MapIterable<String, CoreInstance> propertiesByName = processorSupport.class_getSimplePropertiesByName(_class);
@@ -537,7 +537,7 @@ public class ClassImplProcessor
             return "";
         }
 
-        String ownerClassName = TypeProcessor.javaInterfaceForType(_class, processorSupport);
+        String ownerClassName = JavaPackageAndImportBuilder.buildImplClassNameFromType(_class, implSuffix, processorSupport);
         String ownerTypeParams = ClassProcessor.typeParameters(_class);
         return Lists.mutable.<Pair<String, CoreInstance>>ofInitialCapacity(propertiesByName.size())
                 .withAll(propertiesByName.keyValuesView())
@@ -601,7 +601,7 @@ public class ClassImplProcessor
         String typeParams = ClassProcessor.typeParameters(_class);
         String classNamePlusTypeParams = className + (typeParams.isEmpty() ? "" : "<" + typeParams + "> ");
 
-        return "    public " + classNamePlusTypeParams + " copy()\n" +
+        return "    public " + implClassName + (typeParams.isEmpty() ? "" : "<" + typeParams + ">") + " copy()\n" +
                 "    {\n" +
                 "        return new " + implClassName + "(this);\n" +
                 "    }\n" +
@@ -628,8 +628,10 @@ public class ClassImplProcessor
                         reversePropertyName = Property.getPropertyName(reverseProperty);
                     }
 
+                    CoreInstance unresolvedReturnType = ClassProcessor.getPropertyUnresolvedReturnType(property, processorSupport);
                     CoreInstance returnType = ClassProcessor.getPropertyResolvedReturnType(classGenericType, property, processorSupport);
-                    String typeObject = TypeProcessor.typeToJavaObjectSingle(returnType, true, processorSupport);
+                    boolean makePrimitiveIfPossible = GenericType.isGenericTypeConcrete(unresolvedReturnType) && Multiplicity.isToOne(multiplicity, true);
+                    String typeObject = TypeProcessor.pureTypeToJava(returnType, true, makePrimitiveIfPossible, processorSupport);
 
                     boolean isToOne = Multiplicity.isToOne(multiplicity, false);
                     return "        this._" + name + " = " + (isToOne ? "(" + typeObject + ")((" + implClassName + ")src)._" + name : "Lists.mutable.ofAll(((" + implClassName + ")src)._" + name + ")") + ";\n" +

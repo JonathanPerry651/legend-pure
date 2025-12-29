@@ -91,6 +91,9 @@ public class Generate
                 this.message.setMessage("Generating Java sources (" + sourceCounter.getCount() + "/" + totalSourceCount + ")");
             }
         });
+        
+        javaSources.addAllIterable(javaSourceCodeGenerator.generateRegistry());
+        
         this.observer.endGeneratingJavaFiles(compileGroup, javaSources);
 
         return javaSources;

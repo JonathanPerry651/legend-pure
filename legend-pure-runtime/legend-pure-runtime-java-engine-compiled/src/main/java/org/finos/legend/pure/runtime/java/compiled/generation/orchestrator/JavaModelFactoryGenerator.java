@@ -32,6 +32,7 @@ import org.finos.legend.pure.m3.serialization.runtime.cache.CacheState;
 import org.finos.legend.pure.m3.serialization.runtime.cache.ClassLoaderPureGraphCache;
 import org.finos.legend.pure.runtime.java.compiled.generation.JavaPackageAndImportBuilder;
 import org.finos.legend.pure.runtime.java.compiled.generation.JavaSourceCodeGenerator;
+import org.finos.legend.pure.m3.navigation.type.Type;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -39,66 +40,120 @@ import java.nio.file.Paths;
 /**
  * Generates java source code from the class path
  */
-public class JavaModelFactoryGenerator
-{
-    public static void main(String... args) throws Exception
-    {
-        System.out.println("Generating Java Factory for Parser");
-        String name = args[0];
-        String parserClass = args[1];
-        Path output = Paths.get(args[2]);
-        System.out.println("   name:" + name);
-        System.out.println("   parser class:" + parserClass);
-        System.out.println("   output:" + output);
-        MutableList<String> parsers = Lists.mutable.with(parserClass.replaceAll("\\n", "").replaceAll("\\r", "").split(","));
-        MutableSet<String> allTypes = Sets.mutable.empty();
-        parsers.forEach(p ->
-        {
-            try
-            {
-                Object parser = Class.forName(p.trim()).getConstructor().newInstance();
-                ((CoreInstanceFactoriesRegistry) parser).getCoreInstanceFactoriesRegistry().flatCollect(CoreInstanceFactoryRegistry::getAllPaths, allTypes);
-            }
-            catch (ReflectiveOperationException e)
-            {
-                throw new RuntimeException(e);
-            }
-        });
+public class JavaModelFactoryGenerator {
+        public static void main(String... args) throws Exception {
+                System.out.println("Generating Java Factory for Parser");
+                String name = args[0];
+                String parserClass = args[1];
+                Path output = Paths.get(args[2]);
+                System.out.println("   name:" + name);
+                System.out.println("   parser class:" + parserClass);
+                System.out.println("   output:" + output);
+                MutableList<String> parsers = Lists.mutable
+                                .with(parserClass.replaceAll("\\n", "").replaceAll("\\r", "").split(","));
+                MutableSet<String> allTypes = Sets.mutable.empty();
+                parsers.forEach(p -> {
+                        try {
+                                Object parser = Class.forName(p.trim()).getConstructor().newInstance();
+                                ((CoreInstanceFactoriesRegistry) parser).getCoreInstanceFactoriesRegistry()
+                                                .flatCollect(CoreInstanceFactoryRegistry::getAllPaths, allTypes);
+                        } catch (ReflectiveOperationException e) {
+                                throw new RuntimeException(e);
+                        }
+                });
+                allTypes.add("meta::pure::functions::lang::KeyValue");
+                allTypes.add("meta::pure::functions::string::toRepresentation_Any_1__String_1_");
+                allTypes.add("meta::pure::functions::string::plus_String_MANY__String_1_");
+                allTypes.add("meta::pure::functions::collection::isEmpty_Any_$0_1$__Boolean_1_");
+                allTypes.add("meta::pure::functions::meta::elementToPath_Type_1__String_1_");
+                allTypes.add("meta::pure::functions::meta::elementToPath_Type_1__String_1__String_1_");
+                allTypes.add("meta::pure::functions::meta::elementToPath_PackageableElement_1__String_1_");
+                allTypes.add("meta::pure::functions::meta::elementToPath_PackageableElement_1__String_1__String_1_");
+                allTypes.add("meta::pure::functions::meta::elementToPath_Function_1__String_1_");
+                allTypes.add("meta::pure::functions::meta::type_Any_MANY__Type_1_");
 
-
-        System.out.println("   managed types: " + allTypes);
-        gen(System.nanoTime(), output, name, allTypes);
-        System.out.println("Finished generating Java Factory");
-    }
-
-    public static void gen(long start, Path filePath, String name, MutableSet<String> allTypes)
-    {
-        RichIterable<CodeRepository> repositoriesForCompilation = CodeRepositorySet.newBuilder()
-                .withCodeRepositories(CodeRepositoryProviderHelper.findCodeRepositories())
-                .build().getRepositories();
-        System.out.println("   Repositories: " + repositoriesForCompilation.collect(CodeRepository::getName).makeString("[", ", ", "]"));
-        CompositeCodeStorage codeStorage = new CompositeCodeStorage(new ClassLoaderCodeStorage(repositoriesForCompilation));
-        ClassLoaderPureGraphCache graphCache = new ClassLoaderPureGraphCache();
-        PureRuntime runtime = new PureRuntimeBuilder(codeStorage).withCache(graphCache).setTransactionalByDefault(false).buildAndTryToInitializeFromCache();
-        if (!runtime.isInitialized())
-        {
-            CacheState cacheState = graphCache.getCacheState();
-            if (cacheState != null)
-            {
-                String lastStackTrace = cacheState.getLastStackTrace();
-                if (lastStackTrace != null)
-                {
-                    System.out.println("      Cache initialization failure: " + lastStackTrace);
-                }
-            }
-            System.out.println("      Initialization from caches failed - compiling from scratch");
-            runtime.reset();
-            runtime.loadAndCompileCore();
-            runtime.loadAndCompileSystem();
+                System.out.println("   managed types: " + allTypes);
+                gen(System.nanoTime(), output, name, allTypes);
+                System.out.println("Finished generating Java Factory");
         }
-        System.out.format("      Finished Pure initialization (%.6fs)%n", (System.nanoTime() - start) / 1_000_000_000.0);
 
-        JavaSourceCodeGenerator javaSourceCodeGenerator = new JavaSourceCodeGenerator(runtime.getProcessorSupport(), runtime.getCodeStorage(), true, filePath, false, Sets.mutable.empty(), name, JavaPackageAndImportBuilder.externalizablePackage(), true);
-        javaSourceCodeGenerator.generateCode(allTypes);
-    }
+        public static void gen(long start, Path filePath, String name, MutableSet<String> allTypes) {
+                RichIterable<CodeRepository> repositoriesForCompilation = CodeRepositorySet.newBuilder()
+                                .withCodeRepositories(CodeRepositoryProviderHelper.findCodeRepositories())
+                                .build().getRepositories();
+                System.out.println("   Repositories: "
+                                + repositoriesForCompilation.collect(CodeRepository::getName).makeString("[", ", ",
+                                                "]"));
+                CompositeCodeStorage codeStorage = new CompositeCodeStorage(
+                                new ClassLoaderCodeStorage(repositoriesForCompilation));
+                ClassLoaderPureGraphCache graphCache = new ClassLoaderPureGraphCache();
+                PureRuntime runtime = new PureRuntimeBuilder(codeStorage).withCache(graphCache)
+                                .setTransactionalByDefault(false)
+                                .buildAndTryToInitializeFromCache();
+                if (!runtime.isInitialized()) {
+                        CacheState cacheState = graphCache.getCacheState();
+                        if (cacheState != null) {
+                                String lastStackTrace = cacheState.getLastStackTrace();
+                                if (lastStackTrace != null) {
+                                        System.out.println("      Cache initialization failure: " + lastStackTrace);
+                                }
+                        }
+                        System.out.println("      Initialization from caches failed - compiling from scratch");
+                        runtime.reset();
+                        runtime.loadAndCompileCore();
+                        runtime.loadAndCompileSystem();
+                }
+                System.out.format("      Finished Pure initialization (%.6fs)%n",
+                                (System.nanoTime() - start) / 1_000_000_000.0);
+
+                org.finos.legend.pure.m3.navigation.ProcessorSupport processorSupport = runtime.getProcessorSupport();
+                org.eclipse.collections.api.list.MutableList<org.finos.legend.pure.m4.coreinstance.CoreInstance> stack = org.eclipse.collections.api.factory.Lists.mutable
+                                .with(processorSupport.package_getByUserPath("::"));
+                while (stack.notEmpty()) {
+                        org.finos.legend.pure.m4.coreinstance.CoreInstance instance = stack.remove(stack.size() - 1);
+                        if (org.finos.legend.pure.m3.navigation.Instance.instanceOf(instance,
+                                        org.finos.legend.pure.m3.navigation.M3Paths.Package, processorSupport)) {
+                                stack.addAllIterable(instance
+                                                .getValueForMetaPropertyToMany(
+                                                                org.finos.legend.pure.m3.navigation.M3Properties.children));
+                        } else {
+                                boolean isFunction = org.finos.legend.pure.m3.navigation.Instance.instanceOf(instance,
+                                                org.finos.legend.pure.m3.navigation.M3Paths.ConcreteFunctionDefinition,
+                                                processorSupport) ||
+                                                org.finos.legend.pure.m3.navigation.Instance.instanceOf(instance,
+                                                                org.finos.legend.pure.m3.navigation.M3Paths.NativeFunction,
+                                                                processorSupport);
+                                boolean isClass = org.finos.legend.pure.m3.navigation.Instance.instanceOf(instance,
+                                                org.finos.legend.pure.m3.navigation.M3Paths.Class, processorSupport);
+                                boolean isEnum = org.finos.legend.pure.m3.navigation.Instance.instanceOf(instance,
+                                                org.finos.legend.pure.m3.navigation.M3Paths.Enumeration,
+                                                processorSupport);
+                                boolean isMeasure = org.finos.legend.pure.m3.navigation.Instance.instanceOf(instance,
+                                                org.finos.legend.pure.m3.navigation.M3Paths.Measure,
+                                                processorSupport);
+                                boolean isExtendedPrimitive = Type.isExtendedPrimitiveType(instance, processorSupport);
+
+                                if (isFunction || isClass || isEnum || isMeasure || isExtendedPrimitive) {
+                                        if (instance.getSourceInformation() != null && instance.getSourceInformation()
+                                                        .getSourceId().startsWith("/platform/")) {
+                                                String path = org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement
+                                                                .getUserPathForPackageableElement(instance);
+                                                if (!path.startsWith("meta::pure::mapping")
+                                                                && !path.startsWith("meta::external::store")) {
+                                                        allTypes.add(path);
+                                                }
+                                        }
+                                }
+                        }
+                }
+
+                System.out.println("Checking for meta::pure::functions::lang::KeyValue: " +
+                                (runtime.getCoreInstance("meta::pure::functions::lang::KeyValue") != null));
+
+                JavaSourceCodeGenerator javaSourceCodeGenerator = new JavaSourceCodeGenerator(
+                                runtime.getProcessorSupport(),
+                                runtime.getCodeStorage(), true, filePath, false, Sets.mutable.empty(), name,
+                                JavaPackageAndImportBuilder.externalizablePackage(), true);
+                javaSourceCodeGenerator.generateCode(allTypes);
+        }
 }

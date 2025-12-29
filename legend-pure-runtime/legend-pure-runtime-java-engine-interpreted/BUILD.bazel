@@ -1,0 +1,28 @@
+load("@rules_java//java:defs.bzl", "java_library")
+
+java_library(
+    name = "legend-pure-runtime-java-engine-interpreted",
+    srcs = glob(["src/main/java/**/*.java"]),
+    resources = glob(["src/main/resources/**/*"]),
+    visibility = ["//visibility:public"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-shared",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@maven//:junit_junit",
+    ],
+)
+
+# java_test(
+#     name = "tests",
+#     srcs = glob(["src/test/java/**/*.java"]),
+#     deps = [
+#         ":legend-pure-runtime-java-engine-interpreted",
+#         "//legend-pure/legend-pure-core/legend-pure-m3-core",
+#         "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+#         "@maven//:org_eclipse_collections_eclipse_collections_testutils",
+#     ],
+# )

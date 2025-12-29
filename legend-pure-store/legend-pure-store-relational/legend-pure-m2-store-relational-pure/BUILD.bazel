@@ -1,0 +1,100 @@
+load("@rules_java//java:defs.bzl", "java_binary", "java_library")
+load("//tools/build_rules:pure_generation.bzl", "pure_model_generation")
+
+java_library(
+    name = "m2-store-relational-pure-boot",
+    srcs = glob(["src/main/java/**/*.java"]),
+    resources = glob(["src/main/resources/**/*"]),
+    visibility = ["//visibility:public"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+)
+
+java_binary(
+    name = "M3CoreInstanceGenerator",
+    main_class = "org.finos.legend.pure.m3.generator.bootstrap.M3CoreInstanceGenerator",
+    runtime_deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure",
+        ":m2-store-relational-pure-boot",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+pure_model_generation(
+    name = "pure_gen",
+    srcs = glob(["src/main/resources/**/*.pure"]),
+    visibility = ["//visibility:public"],
+    model_name = "RelationalStore",
+    source_path = "/platform_store_relational/grammar/relational.pure,/platform_store_relational/grammar/relationalMapping.pure,/platform_store_relational/relationalRuntime.pure,/platform_store_relational/functions.pure,/platform_store_relational/runtimeLogging.pure",
+    tool = ":M3CoreInstanceGenerator",
+)
+
+java_library(
+    name = "m2-store-relational-pure-gen",
+    srcs = [":pure_gen"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":m2-store-relational-pure-boot",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+)
+
+java_library(
+    name = "legend-pure-m2-store-relational-pure",
+    visibility = ["//visibility:public"],
+    exports = [
+        ":m2-store-relational-pure-boot",
+        ":m2-store-relational-pure-gen",
+    ],
+)
+
+java_binary(
+    name = "PureJarGenerator",
+    main_class = "org.finos.legend.pure.m3.generator.par.PureJarGenerator",
+    runtime_deps = [
+        ":m2-store-relational-pure-boot",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+genrule(
+    name = "pure_platform_store_relational_par",
+    srcs = [
+        ":m2-store-relational-pure-boot",
+    ],
+    outs = ["pure-platform_store_relational.par"],
+    cmd = """
+        mkdir -p par_out_store_relational
+        $(location :PureJarGenerator) \
+            0.0.0-SNAPSHOT \
+            platform_store_relational \
+            par_out_store_relational
+        
+        mv par_out_store_relational/pure-platform_store_relational.par $(location pure-platform_store_relational.par)
+    """,
+    tools = [":PureJarGenerator"],
+    visibility = ["//visibility:public"],
+)
+
+java_library(
+    name = "pure_platform_store_relational_par_lib",
+    resources = [":pure-platform_store_relational.par"],
+    resource_strip_prefix = "legend-pure/legend-pure-store/legend-pure-store-relational/legend-pure-m2-store-relational-pure",
+    visibility = ["//visibility:public"],
+)

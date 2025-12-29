@@ -1,0 +1,263 @@
+load("@rules_java//java:defs.bzl", "java_library", "java_test")
+
+genrule(
+    name = "antlr_lexer_gen",
+    srcs = [
+         "src/main/antlr4/org/finos/legend/pure/m4/serialization/grammar/M4AntlrLexer.g4",
+         "src/main/antlr4/org/finos/legend/pure/m4/serialization/grammar/core/M4Fragment.g4",
+    ],
+    outs = [
+        "org/finos/legend/pure/m4/serialization/grammar/M4AntlrLexer.java",
+        "org/finos/legend/pure/m4/serialization/grammar/M4AntlrLexer.tokens",
+    ],
+    cmd = """
+        mkdir -p core
+        cp $(location src/main/antlr4/org/finos/legend/pure/m4/serialization/grammar/M4AntlrLexer.g4) .
+        cp $(location src/main/antlr4/org/finos/legend/pure/m4/serialization/grammar/core/M4Fragment.g4) core/
+        
+        $(location //legend-pure:antlr4_tool) \
+        -package org.finos.legend.pure.m4.serialization.grammar \
+        -lib core \
+        -o $(RULEDIR)/org/finos/legend/pure/m4/serialization/grammar \
+        M4AntlrLexer.g4
+    """,
+    tools = ["//legend-pure:antlr4_tool"],
+)
+
+genrule(
+    name = "antlr_parser_gen",
+    srcs = [
+         "src/main/antlr4/org/finos/legend/pure/m4/serialization/grammar/M4AntlrParser.g4",
+         ":antlr_lexer_gen",
+    ],
+    outs = [
+        "org/finos/legend/pure/m4/serialization/grammar/M4AntlrParser.java",
+        "org/finos/legend/pure/m4/serialization/grammar/M4AntlrParserBaseListener.java",
+        "org/finos/legend/pure/m4/serialization/grammar/M4AntlrParserListener.java",
+        "org/finos/legend/pure/m4/serialization/grammar/M4AntlrParserBaseVisitor.java",
+        "org/finos/legend/pure/m4/serialization/grammar/M4AntlrParserVisitor.java",
+    ],
+    cmd = """
+        cp $(location src/main/antlr4/org/finos/legend/pure/m4/serialization/grammar/M4AntlrParser.g4) .
+        cp $(locations :antlr_lexer_gen) .
+
+        $(location //legend-pure:antlr4_tool) \
+        -package org.finos.legend.pure.m4.serialization.grammar \
+        -visitor -listener \
+        -lib . \
+        -o $(RULEDIR)/org/finos/legend/pure/m4/serialization/grammar \
+        M4AntlrParser.g4
+    """,
+    tools = ["//legend-pure:antlr4_tool"],
+)
+
+genrule(
+    name = "antlr_resources",
+    srcs = ["src/main/antlr4/org/finos/legend/pure/m4/serialization/grammar/core/M4Fragment.g4"],
+    outs = ["antlr/M4Fragment.g4"],
+    cmd = "cp $< $@",
+)
+
+java_library(
+    name = "legend-pure-m4",
+    srcs = glob(["src/main/java/**/*.java"]) + [":antlr_lexer_gen", ":antlr_parser_gen"],
+    deps = [
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_antlr_antlr4_runtime",
+    ],
+    exports = [
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_antlr_antlr4_runtime",
+    ],
+    resources = [":antlr_resources"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "grammar_files",
+    srcs = glob(["src/main/antlr4/**/*.g4"]),
+    visibility = ["//visibility:public"],
+)
+
+java_library(
+    name = "test_sources",
+    srcs = glob(["src/test/java/**/*.java"]),
+    deps = [
+        ":legend-pure-m4",
+        "@maven//:junit_junit",
+    ],
+)
+
+java_test(
+    name = "TestCoreM4",
+    test_class = "org.finos.legend.pure.m4.TestCoreM4",
+    runtime_deps = [":test_sources"],
+)
+
+java_test(
+    name = "TestAbstractLazySpliterable",
+    test_class = "org.finos.legend.pure.m4.tools.TestAbstractLazySpliterable",
+    runtime_deps = [":test_sources"],
+)
+
+java_test(
+    name = "TestTextTools",
+    test_class = "org.finos.legend.pure.m4.tools.TestTextTools",
+    runtime_deps = [":test_sources"],
+)
+
+java_test(
+    name = "TestSourceInformation",
+    test_class = "org.finos.legend.pure.m4.coreinstance.TestSourceInformation",
+    runtime_deps = [":test_sources"],
+)
+
+java_test(
+    name = "TestPureDate",
+    test_class = "org.finos.legend.pure.m4.coreinstance.primitive.date.TestPureDate",
+    runtime_deps = [":test_sources"],
+)
+
+java_test(
+    name = "TestPureStrictTime",
+    test_class = "org.finos.legend.pure.m4.coreinstance.primitive.strictTime.TestPureStrictTime",
+    runtime_deps = [":test_sources"],
+)
+
+java_test(
+    name = "TestModelRepository",
+    test_class = "org.finos.legend.pure.m4.TestModelRepository",
+    runtime_deps = [":test_sources"],
+)
+
+java_test(
+    name = "TestCompileStateSet",
+    test_class = "org.finos.legend.pure.m4.TestCompileStateSet",
+    runtime_deps = [":test_sources"],
+)
+
+java_test(
+    name = "TestPureException",
+    test_class = "org.finos.legend.pure.m4.TestPureException",
+    runtime_deps = [":test_sources"],
+)
+
+java_test(
+    name = "TestTransaction",
+    test_class = "org.finos.legend.pure.m4.transaction.TestTransaction",
+    runtime_deps = [":test_sources"],
+)
+
+java_test(
+    name = "TestModelRepositoryTransaction",
+    test_class = "org.finos.legend.pure.m4.TestModelRepositoryTransaction",
+    runtime_deps = [":test_sources"],
+)
+
+java_test(
+    name = "TestSerializers_ByteListWriterReader",
+    test_class = "org.finos.legend.pure.m4.serialization.TestSerializers_ByteListWriterReader",
+    runtime_deps = [":test_sources"],
+)
+
+java_test(
+    name = "TestSerializers_StreamWriterByteListReader",
+    test_class = "org.finos.legend.pure.m4.serialization.TestSerializers_StreamWriterByteListReader",
+    runtime_deps = [":test_sources"],
+)
+
+java_test(
+    name = "TestDateTimeParsing",
+    test_class = "org.finos.legend.pure.m4.serialization.grammar.TestDateTimeParsing",
+    runtime_deps = [":test_sources"],
+)
+
+java_test(
+    name = "TestStrictDateParsing",
+    test_class = "org.finos.legend.pure.m4.serialization.grammar.TestStrictDateParsing",
+    runtime_deps = [":test_sources"],
+)
+
+java_test(
+    name = "TestIntegerParsing",
+    test_class = "org.finos.legend.pure.m4.serialization.grammar.TestIntegerParsing",
+    runtime_deps = [":test_sources"],
+)
+
+java_test(
+    name = "TestStringParsing",
+    test_class = "org.finos.legend.pure.m4.serialization.grammar.TestStringParsing",
+    runtime_deps = [":test_sources"],
+)
+
+java_test(
+    name = "TestDateParsing",
+    test_class = "org.finos.legend.pure.m4.serialization.grammar.TestDateParsing",
+    runtime_deps = [":test_sources"],
+)
+
+java_test(
+    name = "TestStrictTimeParsing",
+    test_class = "org.finos.legend.pure.m4.serialization.grammar.TestStrictTimeParsing",
+    runtime_deps = [":test_sources"],
+)
+
+java_test(
+    name = "TestStringEscape",
+    test_class = "org.finos.legend.pure.m4.serialization.grammar.TestStringEscape",
+    runtime_deps = [":test_sources"],
+)
+
+java_test(
+    name = "TestFloatParsing",
+    test_class = "org.finos.legend.pure.m4.serialization.grammar.TestFloatParsing",
+    runtime_deps = [":test_sources"],
+)
+
+java_test(
+    name = "TestBooleanParsing",
+    test_class = "org.finos.legend.pure.m4.serialization.grammar.TestBooleanParsing",
+    runtime_deps = [":test_sources"],
+)
+
+java_test(
+    name = "TestSerializers_StreamWriterByteBufferReader",
+    test_class = "org.finos.legend.pure.m4.serialization.TestSerializers_StreamWriterByteBufferReader",
+    runtime_deps = [":test_sources"],
+)
+
+java_test(
+    name = "TestSerializers_StreamWriterReader",
+    test_class = "org.finos.legend.pure.m4.serialization.TestSerializers_StreamWriterReader",
+    runtime_deps = [":test_sources"],
+)
+
+java_test(
+    name = "TestSerializers_GZipStreamWriterReader",
+    test_class = "org.finos.legend.pure.m4.serialization.TestSerializers_GZipStreamWriterReader",
+    runtime_deps = [":test_sources"],
+)
+
+java_test(
+    name = "TestSerializers_ByteChannelWriterReader",
+    test_class = "org.finos.legend.pure.m4.serialization.TestSerializers_ByteChannelWriterReader",
+    runtime_deps = [":test_sources"],
+)
+
+java_test(
+    name = "TestSerializers_StreamWriterByteChannelReader",
+    test_class = "org.finos.legend.pure.m4.serialization.TestSerializers_StreamWriterByteChannelReader",
+    runtime_deps = [":test_sources"],
+)
+
+
+
+java_test(
+    name = "TestSerialization",
+    test_class = "org.finos.legend.pure.m4.serialization.TestSerialization",
+    runtime_deps = [":test_sources"],
+)

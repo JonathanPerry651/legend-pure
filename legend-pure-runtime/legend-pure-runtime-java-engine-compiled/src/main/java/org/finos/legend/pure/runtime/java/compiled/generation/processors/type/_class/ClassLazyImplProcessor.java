@@ -94,7 +94,7 @@ public class ClassLazyImplProcessor
                         (Multiplicity.isToOne(returnMultiplicity, false) ?
                          "    public " + returnTypeJava + " _" + name + ";\n" :
                          "    public RichIterable _" + name + " = Lists.mutable.empty();\n") +
-                        buildLazyProperty(property, ownerClassName + (ownerTypeParams.isEmpty() ? "" : "<" + ownerTypeParams + ">"), "this", name, returnType, unresolvedReturnType, returnMultiplicity, processorContext1.getSupport(), processorContext1), processorContext, processorSupport) +
+                        buildLazyProperty(property, ownerClassName + (ownerTypeParams.isEmpty() ? "" : "<" + ownerTypeParams + ">"), "this", name, returnType, unresolvedReturnType, returnMultiplicity, processorContext1.getSupport(), processorContext1), processorContext, processorSupport, CLASS_LAZYIMPL_SUFFIX) +
                 ClassImplProcessor.buildQualifiedProperties(classGenericType, processorContext, processorSupport) +
                 buildLazyCopy(classGenericType, classInterfaceName, className, false, processorSupport) +
                 ClassImplProcessor.buildEquality(classGenericType, CLASS_LAZYIMPL_SUFFIX, true, false, true, processorContext, processorSupport) +
@@ -264,7 +264,7 @@ public class ClassLazyImplProcessor
                                             "        }\n"));
         }).makeString("");
 
-        return "    public " + classNamePlusTypeParams + " copy()\n" +
+        return "    public " + classImplName + (typeParams.isEmpty() ? "" : "<" + typeParams + ">") + " copy()\n" +
                 "    {\n" +
                 "        return new " + classImplName + "(this);\n" +
                 "    }\n" +

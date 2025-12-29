@@ -1,0 +1,12 @@
+legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/AbstractCompiledStateIntegrityTest.java
+legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/PureExpressionTest.java
+legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/incremental/enumeration/AbstractPureRuntimeEnumerationTest.java
+legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/AbstractImportGroupsTest.java
+legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/serialization/grammar/v1/AbstractPrimitiveParsingTest.java
+legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/serialization/compiler/element/AbstractElementBuilderTest.java
+legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/serialization/compiler/element/AbstractPackageableElementBuilderTest.java
+legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/serialization/compiler/file/AbstractFilePathProviderExtensionTest.java
+legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/serialization/compiler/reference/AbstractReferenceTest.java
+legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/serialization/compiler/reference/AbstractReferenceIdExtensionTest.java
+legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/serialization/compiler/metadata/AbstractMetadataTest.java
+legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/serialization/runtime/binary/AbstractPureRepositoryJarLibraryTest.java

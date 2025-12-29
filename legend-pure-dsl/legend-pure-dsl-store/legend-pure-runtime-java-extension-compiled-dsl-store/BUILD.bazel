@@ -1,0 +1,157 @@
+load("@rules_java//java:defs.bzl", "java_binary", "java_library")
+load("//tools/build_rules:java_model_generation.bzl", "java_model_generation")
+
+java_binary(
+    name = "JavaModelFactoryGenerator_Store",
+    main_class = "org.finos.legend.pure.runtime.java.compiled.generation.orchestrator.JavaModelFactoryGenerator",
+    runtime_deps = [
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-grammar",
+        ":m3-store-gen-lib",
+    ],
+    visibility = ["//visibility:private"],
+)
+
+java_binary(
+    name = "M3CoreInstanceGenerator_Store",
+    main_class = "org.finos.legend.pure.m3.generator.bootstrap.M3CoreInstanceGenerator",
+    runtime_deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-base",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure",
+    ],
+    visibility = ["//visibility:private"],
+)
+
+java_model_generation(
+    name = "java_gen",
+    model_name = "Store",
+    factory_class = "org.finos.legend.pure.m2.inlinedsl.store.RelationStoreAccessor",
+    tool = ":JavaModelFactoryGenerator_Store",
+    srcs = ["//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure:pure_gen"],
+)
+
+java_binary(
+    name = "JavaCodeGeneration_Store",
+    main_class = "org.finos.legend.pure.runtime.java.compiled.generation.orchestrator.JavaCodeGeneration",
+    runtime_deps = [
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure",
+         # PAR needed?
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure:pure_platform_dsl_store_par_lib",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        ":m3-store-gen-lib",
+    ],
+    visibility = ["//visibility:private"],
+)
+
+genrule(
+    name = "generate_store_sources",
+    srcs = [
+         "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure:pure_platform_dsl_store_par_lib",
+    ],
+    outs = ["store_sources.srcjar", "gen_store.log"],
+    cmd = """
+        mkdir -p work_dir/classes
+        mkdir -p work_dir/target
+        
+        $(location :JavaCodeGeneration_Store) \
+            platform_dsl_store \
+            work_dir/classes \
+            work_dir/target \
+            > $(RULEDIR)/gen_store.log 2>&1 || (cat $(RULEDIR)/gen_store.log && exit 1)
+
+        # Zip sources from work_dir/target/generated-sources and generated-test-sources
+        mkdir -p src_collection
+        if [ -n "$$(ls -A work_dir/target/generated-sources 2>/dev/null)" ]; then
+             cp -r work_dir/target/generated-sources/* src_collection/
+        fi
+        if [ -n "$$(ls -A work_dir/target/generated-test-sources 2>/dev/null)" ]; then
+             cp -r work_dir/target/generated-test-sources/* src_collection/
+        fi
+        
+        # Verify if we have files
+        if [ -z "$$(find src_collection -type f)" ]; then
+             echo "No generated sources found in src_collection" >> $(RULEDIR)/gen_store.log
+             echo "Listing work_dir:" >> $(RULEDIR)/gen_store.log
+             ls -R work_dir >> $(RULEDIR)/gen_store.log
+             exit 1
+        fi
+
+        cd src_collection
+        zip -q -r ../$(RULEDIR)/store_sources.srcjar .
+    """,
+    tools = [":JavaCodeGeneration_Store"],
+)
+
+
+
+genrule(
+    name = "filtered_java_gen",
+    srcs = [":java_gen"],
+    outs = ["store_m3.srcjar"],
+    cmd = """
+        mkdir -p filtered_gen
+        cd filtered_gen
+        unzip -q ../$(location :java_gen)
+        # Remove Root implementation classes to avoid duplicates with generate_store_sources
+        rm -rf org/finos/legend/pure/generated
+        zip -q -r ../$(RULEDIR)/store_m3.srcjar .
+    """,
+
+)
+
+genrule(
+    name = "generate_store_m3_instances",
+    srcs = ["//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure:pure_platform_dsl_store_par_lib"], # Trigger rebuild
+    outs = ["store_m3_instances.srcjar"],
+    cmd = """
+        mkdir -p m3_store_out
+        
+        $(location :M3CoreInstanceGenerator_Store) \
+        m3_store_out/ \
+        M3Store \
+        /platform_dsl_store/grammar/runtime.pure,/platform_dsl_store/grammar/store.pure
+        
+        cd m3_store_out
+        zip -q -r ../$(OUTS) .
+    """,
+    tools = [":M3CoreInstanceGenerator_Store"],
+)
+
+java_library(
+    name = "m3-store-gen-lib",
+    srcs = [":generate_store_m3_instances"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-base",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+    visibility = ["//visibility:private"],
+)
+
+java_library(
+    name = "legend-pure-runtime-java-extension-compiled-dsl-store",
+    srcs = [":filtered_java_gen", ":generate_store_sources", ":generate_store_m3_instances"] + glob(["src/main/java/**/*.java"]),
+    resources = glob(["src/main/resources/**/*"]),
+    visibility = ["//visibility:public"],
+    deps = [
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-grammar",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure:m2-dsl-store-pure-gen",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+    javacopts = [
+        "-Xep:IdentityBinaryExpression:OFF",
+        "-Xep:IsInstanceIncompatibleType:OFF",
+        "-Xep:ComparableType:OFF",
+        "-Xep:SelfEquals:OFF",
+    ],
+)
+
+

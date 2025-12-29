@@ -1,0 +1,112 @@
+load("@rules_java//java:defs.bzl", "java_library")
+
+genrule(
+    name = "antlr_gen",
+    srcs = glob(["src/main/antlr4/**/*.g4"]) + [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:grammar_files",
+        "//legend-pure/legend-pure-core/legend-pure-m4:grammar_files",
+    ],
+    outs = [
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/AggregationAwareLexer.java",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/AggregationAwareLexer.tokens",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/AggregationAwareParser.java",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/AggregationAwareParserVisitor.java",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/AggregationAwareParserListener.java",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/AggregationAwareParserBaseVisitor.java",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/AggregationAwareParserBaseListener.java",
+        
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/EnumerationMappingLexer.java",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/EnumerationMappingLexer.tokens",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/EnumerationMappingParser.java",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/EnumerationMappingParserVisitor.java",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/EnumerationMappingParserListener.java",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/EnumerationMappingParserBaseVisitor.java",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/EnumerationMappingParserBaseListener.java",
+        
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/MappingLexer.java",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/MappingLexer.tokens",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/MappingParser.java",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/MappingParserVisitor.java",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/MappingParserListener.java",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/MappingParserBaseVisitor.java",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/MappingParserBaseListener.java",
+        
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/OperationLexer.java",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/OperationLexer.tokens",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/OperationParser.java",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/OperationParserVisitor.java",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/OperationParserListener.java",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/OperationParserBaseVisitor.java",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/OperationParserBaseListener.java",
+        
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/RelationMappingLexer.java",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/RelationMappingLexer.tokens",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/RelationMappingParser.java",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/RelationMappingParserVisitor.java",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/RelationMappingParserListener.java",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/RelationMappingParserBaseVisitor.java",
+        "org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/RelationMappingParserBaseListener.java",
+    ],
+    cmd = """
+        set -e
+        mkdir -p antlr_flat
+        
+        # Copy all sources to antlr_flat (flattened)
+        for f in $(SRCS); do
+            cp "$$f" antlr_flat/
+        done
+        
+        # Define the list of grammars to process
+        GRAMMARS="AggregationAwareLexer AggregationAwareParser EnumerationMappingLexer EnumerationMappingParser MappingLexer MappingParser OperationLexer OperationParser RelationMappingLexer RelationMappingParser"
+        
+        for g in $$GRAMMARS; do
+            $(location //legend-pure:antlr4_tool) \
+            -package org.finos.legend.pure.m2.dsl.mapping.serialization.grammar \
+            -visitor -listener \
+            -lib antlr_flat \
+            -o $(RULEDIR)/org/finos/legend/pure/m2/dsl/mapping/serialization/grammar \
+            antlr_flat/$${g}.g4
+            
+            # Handle standard location if different
+            if [ -d "$(RULEDIR)/org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/antlr_flat" ]; then
+                 mv $(RULEDIR)/org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/antlr_flat/* $(RULEDIR)/org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/
+                 rmdir $(RULEDIR)/org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/antlr_flat
+            fi
+        done
+        
+        # Move tokens to flat for dependencies in the loop
+        cp $(RULEDIR)/org/finos/legend/pure/m2/dsl/mapping/serialization/grammar/*.tokens antlr_flat/ || true
+    """,
+    tools = ["//legend-pure:antlr4_tool"],
+)
+
+java_library(
+    name = "legend-pure-m2-dsl-mapping-grammar",
+    srcs = glob(["src/main/java/**/*.java"]) + [":antlr_gen"],
+    resources = glob(["src/main/resources/**/*"]),
+    visibility = ["//visibility:public"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure",
+        "@maven//:org_antlr_antlr4_runtime",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+)
+
+java_library(
+    name = "mapping-grammar-test-utils",
+    srcs = ["src/test/java/org/finos/legend/pure/m2/dsl/mapping/test/GraphWalker.java"],
+    deps = [
+        ":legend-pure-m2-dsl-mapping-grammar",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure:m2-dsl-mapping-pure-boot",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@maven//:junit_junit",
+    ],
+    visibility = ["//visibility:public"],
+)

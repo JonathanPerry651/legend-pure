@@ -1,0 +1,71 @@
+load("@rules_java//java:defs.bzl", "java_binary", "java_library")
+load("//tools/build_rules:java_model_generation.bzl", "java_model_generation")
+
+java_binary(
+    name = "JavaModelFactoryGenerator_Path",
+    main_class = "org.finos.legend.pure.runtime.java.compiled.generation.orchestrator.JavaModelFactoryGenerator",
+    runtime_deps = [
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-m2-dsl-path-grammar",
+    ],
+    visibility = ["//visibility:private"],
+)
+
+java_model_generation(
+    name = "java_gen",
+    model_name = "Path",
+    factory_class = "org.finos.legend.pure.m2.inlinedsl.path.NavigationPath",
+    tool = ":JavaModelFactoryGenerator_Path",
+    srcs = [],
+)
+
+java_library(
+    name = "legend-pure-runtime-java-extension-compiled-dsl-path",
+    srcs = glob(["src/main/java/**/*.java"]) + [":java_gen"],
+    resources = glob(["src/main/resources/**/*"]),
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-m2-dsl-path-pure",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+    javacopts = [
+        "-Xep:IdentityBinaryExpression:OFF",
+        "-Xep:IsInstanceIncompatibleType:OFF",
+        "-Xep:ComparableType:OFF",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+java_library(
+    name = "test_utils",
+    srcs = glob(["src/test/java/**/*.java"]),
+    deps = [
+        ":legend-pure-runtime-java-extension-compiled-dsl-path",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-m2-dsl-path-pure",
+         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-m2-dsl-path-grammar:test_utils",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:compiled-engine-test-utils",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-path:pure_platform_dsl_path_par_lib",
+        "@maven//:junit_junit",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+)
+
+java_test(
+    name = "TestPureRuntimePathCompiled",
+    test_class = "org.finos.legend.pure.runtime.java.compiled.path.incremental.TestPureRuntimePathCompiled",
+    runtime_deps = [":test_utils"],
+)
+
+java_test(
+    name = "TestMatchCompiled",
+    test_class = "org.finos.legend.pure.runtime.java.compiled.path.TestMatchCompiled",
+    runtime_deps = [":test_utils"],
+)

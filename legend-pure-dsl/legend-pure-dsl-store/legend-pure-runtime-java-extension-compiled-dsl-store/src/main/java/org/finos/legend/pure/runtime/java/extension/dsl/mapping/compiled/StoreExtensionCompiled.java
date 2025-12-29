@@ -20,6 +20,7 @@ import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtension;
 
 public class StoreExtensionCompiled implements CompiledExtension
 {
+
     @Override
     public SetIterable<String> getExtraCorePath()
     {

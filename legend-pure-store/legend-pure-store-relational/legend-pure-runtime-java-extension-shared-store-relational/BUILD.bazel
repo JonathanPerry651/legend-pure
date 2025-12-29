@@ -1,0 +1,28 @@
+
+java_library(
+    name = "legend-pure-runtime-java-extension-shared-store-relational",
+    srcs = [
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/store/relational/shared/ConnectionFactory.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/store/relational/shared/DataSource.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/store/relational/shared/DataSourceConnectionDisplayInfo.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/store/relational/shared/DataSourceProperty.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/store/relational/shared/DriverConfig.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/store/relational/shared/IConnectionManagerHandler.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/store/relational/shared/JavaSqlTypeNames.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/store/relational/shared/LoadToDbTableHelper.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/store/relational/shared/PureConnectionUtils.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/store/relational/shared/SQLExceptionHandler.java",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-shared",
+        "@maven//:org_apache_tomcat_tomcat_dbcp",
+        "@maven//:org_slf4j_slf4j_api",
+        "@maven//:org_slf4j_jcl_over_slf4j",
+        "@maven//:org_apache_commons_commons_csv",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+)

@@ -1,0 +1,64 @@
+load("//tools/build_rules:pure_generation.bzl", "pure_model_generation")
+
+java_library(
+    name = "m2-dsl-path-pure-boot",
+    srcs = glob(["src/main/java/**/*.java"]),
+    resources = glob(["src/main/resources/**/*"]),
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+java_binary(
+    name = "M3CoreInstanceGenerator",
+    main_class = "org.finos.legend.pure.m3.generator.bootstrap.M3CoreInstanceGenerator",
+    runtime_deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        ":m2-dsl-path-pure-boot",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+pure_model_generation(
+    name = "pure_gen",
+    srcs = glob(["src/main/resources/**/*.pure"]),
+    model_name = "Path",
+    source_path = "/platform_dsl_path/path.pure",
+    tool = ":M3CoreInstanceGenerator",
+)
+
+java_library(
+    name = "legend-pure-m2-dsl-path-pure",
+    srcs = [":pure_gen"],
+    deps = [
+        ":m2-dsl-path-pure-boot",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+    exports = [
+        ":m2-dsl-path-pure-boot",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+java_test(
+    name = "TestM2PathCompiledStateIntegrity",
+    test_class = "org.finos.legend.pure.m2.inlinedsl.path.TestM2PathCompiledStateIntegrity",
+    srcs = ["src/test/java/org/finos/legend/pure/m2/inlinedsl/path/TestM2PathCompiledStateIntegrity.java"],
+    deps = [
+        ":legend-pure-m2-dsl-path-pure",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-path:pure_platform_dsl_path_par_lib",
+        "@maven//:junit_junit",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+)

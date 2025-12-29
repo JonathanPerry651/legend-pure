@@ -1,0 +1,128 @@
+load("@rules_java//java:defs.bzl", "java_library")
+
+genrule(
+    name = "antlr_gen",
+    srcs = glob(["src/main/antlr4/**/*.g4"]) + [
+        "//legend-pure/legend-pure-core/legend-pure-m4:grammar_files",
+    ],
+    outs = [
+        "org/finos/legend/pure/m2/inlinedsl/path/serialization/grammar/NavigationLexer.java",
+        "org/finos/legend/pure/m2/inlinedsl/path/serialization/grammar/NavigationLexer.tokens",
+        "org/finos/legend/pure/m2/inlinedsl/path/serialization/grammar/NavigationParser.java",
+        "org/finos/legend/pure/m2/inlinedsl/path/serialization/grammar/NavigationParserVisitor.java",
+        "org/finos/legend/pure/m2/inlinedsl/path/serialization/grammar/NavigationParserListener.java",
+        "org/finos/legend/pure/m2/inlinedsl/path/serialization/grammar/NavigationParserBaseVisitor.java",
+        "org/finos/legend/pure/m2/inlinedsl/path/serialization/grammar/NavigationParserBaseListener.java",
+    ],
+    cmd = """
+        set -e
+        mkdir -p antlr_flat
+        
+        # Copy all sources to antlr_flat
+        for f in $(SRCS); do
+            cp "$$f" antlr_flat/
+        done
+        
+        # 1. Lexer
+        $(location //legend-pure:antlr4_tool) \
+        -package org.finos.legend.pure.m2.inlinedsl.path.serialization.grammar \
+        -visitor -listener \
+        -lib antlr_flat \
+        -o $(RULEDIR)/org/finos/legend/pure/m2/inlinedsl/path/serialization/grammar \
+        antlr_flat/NavigationLexer.g4
+
+        # Move outputs up
+        mv $(RULEDIR)/org/finos/legend/pure/m2/inlinedsl/path/serialization/grammar/antlr_flat/* $(RULEDIR)/org/finos/legend/pure/m2/inlinedsl/path/serialization/grammar/
+        rmdir $(RULEDIR)/org/finos/legend/pure/m2/inlinedsl/path/serialization/grammar/antlr_flat
+        
+        # Copy tokens to flat
+        cp $(RULEDIR)/org/finos/legend/pure/m2/inlinedsl/path/serialization/grammar/NavigationLexer.tokens antlr_flat/
+        
+        # 2. Parser
+        $(location //legend-pure:antlr4_tool) \
+        -package org.finos.legend.pure.m2.inlinedsl.path.serialization.grammar \
+        -visitor -listener \
+        -lib antlr_flat \
+        -o $(RULEDIR)/org/finos/legend/pure/m2/inlinedsl/path/serialization/grammar \
+        antlr_flat/NavigationParser.g4
+        
+        # Move outputs up
+        mv $(RULEDIR)/org/finos/legend/pure/m2/inlinedsl/path/serialization/grammar/antlr_flat/* $(RULEDIR)/org/finos/legend/pure/m2/inlinedsl/path/serialization/grammar/
+        rmdir $(RULEDIR)/org/finos/legend/pure/m2/inlinedsl/path/serialization/grammar/antlr_flat
+    """,
+    tools = ["//legend-pure:antlr4_tool"],
+)
+
+java_library(
+    name = "legend-pure-m2-dsl-path-grammar",
+    srcs = glob(["src/main/java/**/*.java"]) + [":antlr_gen"],
+    resources = glob(["src/main/resources/**/*"]),
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-m2-dsl-path-pure",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@maven//:org_antlr_antlr4_runtime",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+java_library(
+    name = "test_utils",
+    srcs = glob(["src/test/java/**/*.java"]),
+    deps = [
+        ":legend-pure-m2-dsl-path-grammar",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-m2-dsl-path-pure",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-path:pure_platform_dsl_path_par_lib",
+        "@maven//:junit_junit",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+java_test(
+    name = "TestMilestonedPropertyUsageInFunctonExpressionsWithPath",
+    test_class = "org.finos.legend.pure.m2.inlinedsl.path.milestoning.TestMilestonedPropertyUsageInFunctonExpressionsWithPath",
+    runtime_deps = [":test_utils"],
+)
+
+java_test(
+    name = "TestMilestonedPropertyUsageInPaths",
+    test_class = "org.finos.legend.pure.m2.inlinedsl.path.milestoning.TestMilestonedPropertyUsageInPaths",
+    runtime_deps = [":test_utils"],
+)
+
+java_test(
+    name = "TestVisibilityInPath",
+    test_class = "org.finos.legend.pure.m2.inlinedsl.path.TestVisibilityInPath",
+    runtime_deps = [":test_utils"],
+)
+
+java_test(
+    name = "TestPathParsing",
+    test_class = "org.finos.legend.pure.m2.inlinedsl.path.TestPathParsing",
+    runtime_deps = [":test_utils"],
+)
+
+java_test(
+    name = "TestPureRuntimePath",
+    test_class = "org.finos.legend.pure.m2.inlinedsl.path.incremental.TestPureRuntimePath",
+    runtime_deps = [":test_utils"],
+)
+
+java_test(
+    name = "TestDSLCompilation",
+    test_class = "org.finos.legend.pure.m2.inlinedsl.path.TestDSLCompilation",
+    runtime_deps = [":test_utils"],
+)
+
+java_test(
+    name = "TestFunctionTypeInferenceInPath",
+    test_class = "org.finos.legend.pure.m2.inlinedsl.path.inference.TestFunctionTypeInferenceInPath",
+    runtime_deps = [":test_utils"],
+)

@@ -1,0 +1,25 @@
+load("@rules_java//java:defs.bzl", "java_library")
+load("//tools/build_rules:java_model_generation.bzl", "java_model_generation")
+
+java_model_generation(
+    name = "java_gen",
+    srcs = ["//legend-pure/legend-pure-dsl/legend-pure-dsl-graph/legend-pure-m2-dsl-graph-pure:pure_gen"],
+    model_name = "Graph",
+    factory_class = "org.finos.legend.pure.m2.inlinedsl.graph.antlr.GraphDSL",
+)
+
+java_library(
+    name = "legend-pure-runtime-java-extension-compiled-dsl-graph",
+    srcs = [":java_gen"] + glob(["src/main/java/**/*.java"]),
+    resources = glob(["src/main/resources/**/*"]),
+    visibility = ["//visibility:public"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-graph/legend-pure-m2-dsl-graph-pure",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+    javacopts = ["-Xep:IdentityBinaryExpression:OFF", "-Xep:IsInstanceIncompatibleType:OFF"],
+)

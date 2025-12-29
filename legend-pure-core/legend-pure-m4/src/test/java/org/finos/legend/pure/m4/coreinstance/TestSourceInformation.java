@@ -17,6 +17,7 @@ package org.finos.legend.pure.m4.coreinstance;
 import org.junit.Assert;
 import org.junit.Test;
 
+@SuppressWarnings("SelfComparison")
 public class TestSourceInformation
 {
     @Test

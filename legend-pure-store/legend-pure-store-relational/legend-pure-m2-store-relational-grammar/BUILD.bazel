@@ -1,0 +1,124 @@
+load("@rules_java//java:defs.bzl", "java_library")
+
+genrule(
+    name = "antlr_gen",
+    srcs = glob(["src/main/antlr4/**/*.g4"]) + [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:grammar_files",
+        "//legend-pure/legend-pure-core/legend-pure-m4:grammar_files",
+    ],
+    outs = [
+        "org/finos/legend/pure/m2/relational/serialization/grammar/v1/antlr/RelationalLexer.java",
+        "org/finos/legend/pure/m2/relational/serialization/grammar/v1/antlr/RelationalLexer.tokens",
+        "org/finos/legend/pure/m2/relational/serialization/grammar/v1/antlr/RelationalParser.java",
+        "org/finos/legend/pure/m2/relational/serialization/grammar/v1/antlr/RelationalParserBaseListener.java",
+        "org/finos/legend/pure/m2/relational/serialization/grammar/v1/antlr/RelationalParserBaseVisitor.java",
+        "org/finos/legend/pure/m2/relational/serialization/grammar/v1/antlr/RelationalParserListener.java",
+        "org/finos/legend/pure/m2/relational/serialization/grammar/v1/antlr/RelationalParserVisitor.java",
+    ],
+    cmd = """
+        mkdir -p antlr_out
+        
+        # Copy sources
+        for f in $(SRCS); do
+            cp $$f antlr_out/
+        done
+        
+        # Lexer
+        $(location //legend-pure:antlr4_tool) \
+            -package org.finos.legend.pure.m2.relational.serialization.grammar.v1.antlr \
+            -lib antlr_out \
+            -o $(RULEDIR)/org/finos/legend/pure/m2/relational/serialization/grammar/v1/antlr \
+            antlr_out/RelationalLexer.g4
+
+        mv $(RULEDIR)/org/finos/legend/pure/m2/relational/serialization/grammar/v1/antlr/antlr_out/* $(RULEDIR)/org/finos/legend/pure/m2/relational/serialization/grammar/v1/antlr/
+        rmdir $(RULEDIR)/org/finos/legend/pure/m2/relational/serialization/grammar/v1/antlr/antlr_out
+        
+        # Copy tokens for parser
+        cp $(RULEDIR)/org/finos/legend/pure/m2/relational/serialization/grammar/v1/antlr/RelationalLexer.tokens antlr_out/
+        
+        # Parser
+        $(location //legend-pure:antlr4_tool) \
+            -package org.finos.legend.pure.m2.relational.serialization.grammar.v1.antlr \
+            -visitor -listener \
+            -lib antlr_out \
+            -o $(RULEDIR)/org/finos/legend/pure/m2/relational/serialization/grammar/v1/antlr \
+            antlr_out/RelationalParser.g4
+
+        mv $(RULEDIR)/org/finos/legend/pure/m2/relational/serialization/grammar/v1/antlr/antlr_out/* $(RULEDIR)/org/finos/legend/pure/m2/relational/serialization/grammar/v1/antlr/
+        rmdir $(RULEDIR)/org/finos/legend/pure/m2/relational/serialization/grammar/v1/antlr/antlr_out
+    """,
+    tools = ["//legend-pure:antlr4_tool"],
+    visibility = ["//visibility:public"],
+)
+
+java_library(
+    name = "legend-pure-m2-store-relational-grammar",
+    srcs = glob(["src/main/java/**/*.java"]) + [
+        ":antlr_gen",
+    ],
+    resources = glob(["src/main/resources/**/*"]),
+    visibility = ["//visibility:public"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-grammar",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure",
+        "//legend-pure/legend-pure-store/legend-pure-store-relational/legend-pure-m2-store-relational-pure",
+        "@maven//:org_antlr_antlr4_runtime",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@maven//:org_apache_commons_commons_lang3",
+    ],
+)
+
+java_library(
+    name = "grammar-test-utils",
+    srcs = glob([
+        "src/test/java/**/Abstract*.java",
+        "src/test/java/**/RelationalGraphWalker.java",
+    ]),
+    deps = [
+        ":legend-pure-m2-store-relational-grammar",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-grammar",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-grammar:mapping-grammar-test-utils",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure",
+        "//legend-pure/legend-pure-store/legend-pure-store-relational/legend-pure-m2-store-relational-pure",
+        "@maven//:junit_junit",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+java_test(
+    name = "all_tests",
+    srcs = glob(["src/test/java/**/*.java"], exclude = [
+        "src/test/java/**/Abstract*.java",
+        "src/test/java/**/RelationalGraphWalker.java",
+    ]),
+    test_class = "org.finos.legend.pure.m2.relational.TestSimpleGrammar", # Placeholder, Bazel requires test_class for java_test if not inferred from name
+    deps = [
+        ":grammar-test-utils",
+        ":legend-pure-m2-store-relational-grammar",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-grammar",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure",
+        "//legend-pure/legend-pure-store/legend-pure-store-relational/legend-pure-m2-store-relational-pure",
+        "@maven//:junit_junit",
+        "@maven//:org_eclipse_collections_eclipse_collections",
+        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@maven//:org_mockito_mockito_core",
+        "@maven//:org_eclipse_collections_eclipse_collections_testutils",
+        "//legend-pure/legend-pure-store/legend-pure-store-relational/legend-pure-m2-store-relational-pure:pure_platform_store_relational_par_lib",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure:pure_platform_dsl_mapping_par_lib",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure:pure_platform_dsl_store_par_lib",
+    ],
+)

@@ -74,7 +74,8 @@ public class ClassProcessor
 
     public static boolean isPlatformClass(CoreInstance _class)
     {
-        return PLATFORM_FILES.contains(PackageableElement.getUserPathForPackageableElement(_class));
+        String path = PackageableElement.getUserPathForPackageableElement(_class);
+        return PLATFORM_FILES.contains(path) || JavaPackageAndImportBuilder.M3_CLASSES.contains(path);
     }
 
     public static boolean requiresCompilationImpl(ProcessorSupport processorSupport, CoreInstance _class)
