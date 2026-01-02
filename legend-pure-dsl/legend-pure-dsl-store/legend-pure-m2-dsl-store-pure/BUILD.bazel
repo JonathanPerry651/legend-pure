@@ -29,7 +29,7 @@ pure_model_generation(
     name = "pure_gen",
     srcs = glob(["src/main/resources/**/*.pure"]),
     model_name = "Store",
-    source_path = "/platform_dsl_store/grammar/store.pure,/platform_dsl_store/grammar/runtime.pure",
+    source_path = "/platform_dsl_store/grammar/store.pure",
     tool = ":M3CoreInstanceGenerator",
     visibility = ["//visibility:public"],
 )
