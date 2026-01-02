@@ -1,4 +1,6 @@
 load("@rules_java//java:defs.bzl", "java_library")
+load("@rules_java//java:java_test.bzl", "java_test")
+load("//legend-pure:pure_test.bzl", "pure_test")
 
 java_library(
     name = "legend-pure-runtime-java-extension-interpreted-dsl-path",
@@ -6,33 +8,29 @@ java_library(
     resources = glob(["src/main/resources/**/*"]),
     visibility = ["//visibility:public"],
     deps = [
-        "//legend-pure/legend-pure-core/legend-pure-m4",
         "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-m2-dsl-path-pure",
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-interpreted",
     ],
 )
 
-java_library(
-    name = "test_utils",
-    srcs = glob(["src/test/java/**/*.java"]),
+pure_test(
+    name = "TestDSLExecution",
+    srcs = ["src/test/java/org/finos/legend/pure/runtime/java/interpreted/path/TestDSLExecution.java"],
+    test_class = "org.finos.legend.pure.runtime.java.interpreted.path.TestDSLExecution",
     deps = [
         ":legend-pure-runtime-java-extension-interpreted-dsl-path",
         "//legend-pure/legend-pure-core/legend-pure-m3-core",
         "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
         "//legend-pure/legend-pure-core/legend-pure-m4",
-        "//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-m2-dsl-path-pure",
-        "//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-m2-dsl-path-grammar", 
-        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-interpreted",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-path:pure_platform_dsl_path_par_lib",
-        "@maven//:junit_junit",
-        "@maven//:org_eclipse_collections_eclipse_collections",
-        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-m2-dsl-path-grammar",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-m2-dsl-path-pure",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-interpreted",
+        "@legend_maven//:junit_junit",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
     ],
-)
-
-java_test(
-    name = "TestDSLExecution",
-    test_class = "org.finos.legend.pure.runtime.java.interpreted.path.TestDSLExecution",
-    runtime_deps = [":test_utils"],
+    compiled_test_deps = ["//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-runtime-java-extension-compiled-dsl-path"]
 )

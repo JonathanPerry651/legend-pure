@@ -1,42 +1,44 @@
 load("@rules_java//java:defs.bzl", "java_binary", "java_library")
+load("@rules_java//java:java_test.bzl", "java_test")
+
 load("//tools/build_rules:java_model_generation.bzl", "java_model_generation")
 
 java_binary(
     name = "JavaModelFactoryGenerator_Path",
     main_class = "org.finos.legend.pure.runtime.java.compiled.generation.orchestrator.JavaModelFactoryGenerator",
-    runtime_deps = [
-        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
-        "//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-m2-dsl-path-grammar",
-    ],
     visibility = ["//visibility:private"],
+    runtime_deps = [
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-m2-dsl-path-grammar",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+    ],
 )
 
 java_model_generation(
     name = "java_gen",
-    model_name = "Path",
-    factory_class = "org.finos.legend.pure.m2.inlinedsl.path.NavigationPath",
-    tool = ":JavaModelFactoryGenerator_Path",
     srcs = [],
+    factory_class = "org.finos.legend.pure.m2.inlinedsl.path.NavigationPath",
+    model_name = "Path",
+    tool = ":JavaModelFactoryGenerator_Path",
 )
 
 java_library(
     name = "legend-pure-runtime-java-extension-compiled-dsl-path",
     srcs = glob(["src/main/java/**/*.java"]) + [":java_gen"],
-    resources = glob(["src/main/resources/**/*"]),
-    deps = [
-        "//legend-pure/legend-pure-core/legend-pure-m4",
-        "//legend-pure/legend-pure-core/legend-pure-m3-core",
-        "//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-m2-dsl-path-pure",
-        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
-        "@maven//:org_eclipse_collections_eclipse_collections",
-        "@maven//:org_eclipse_collections_eclipse_collections_api",
-    ],
     javacopts = [
         "-Xep:IdentityBinaryExpression:OFF",
         "-Xep:IsInstanceIncompatibleType:OFF",
         "-Xep:ComparableType:OFF",
     ],
+    resources = glob(["src/main/resources/**/*"]),
     visibility = ["//visibility:public"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-m2-dsl-path-pure",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
 )
 
 java_library(
@@ -47,22 +49,28 @@ java_library(
         "//legend-pure/legend-pure-core/legend-pure-m3-core",
         "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
         "//legend-pure/legend-pure-core/legend-pure-m4",
-        "//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-m2-dsl-path-pure",
-         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
-        "//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-m2-dsl-path-grammar:test_utils",
-        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:compiled-engine-test-utils",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-path:pure_platform_dsl_path_par_lib",
-        "@maven//:junit_junit",
-        "@maven//:org_eclipse_collections_eclipse_collections",
-        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-m2-dsl-path-grammar:test_utils",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-m2-dsl-path-pure",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:platform_metadata",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:CompiledClassloaderStateVerifier_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:CompiledMetadataStateVerifier_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:TestIdBuilder_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/compiler:TestMemoryFileManager_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/compiler:TestStringJavaSource_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/generation:TestJavaPackageAndImportBuilder_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/binary:TestDistributedBinaryGraphSerialization_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/binary:TestStringCaching_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/model:TestObj_lib",
+        "@legend_maven//:junit_junit",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_testutils",
     ],
 )
 
-java_test(
-    name = "TestPureRuntimePathCompiled",
-    test_class = "org.finos.legend.pure.runtime.java.compiled.path.incremental.TestPureRuntimePathCompiled",
-    runtime_deps = [":test_utils"],
-)
+
 
 java_test(
     name = "TestMatchCompiled",

@@ -1,0 +1,430 @@
+load("@rules_java//java:defs.bzl", "java_library", "java_test")
+
+java_test(
+    name = "TestArcCosine",
+    srcs = ["TestArcCosine.java"],
+    test_class = "org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.base.math.TestArcCosine",
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:platform_metadata",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:CompiledClassloaderStateVerifier_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:CompiledMetadataStateVerifier_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:TestIdBuilder_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/compiler:TestMemoryFileManager_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/compiler:TestStringJavaSource_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/generation:TestJavaPackageAndImportBuilder_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/binary:TestDistributedBinaryGraphSerialization_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/binary:TestStringCaching_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/model:TestObj_lib",
+        "@legend_maven//:junit_junit",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_testutils",
+    ],
+)
+
+java_test(
+    name = "TestArcSine",
+    srcs = ["TestArcSine.java"],
+    test_class = "org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.base.math.TestArcSine",
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:platform_metadata",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:CompiledClassloaderStateVerifier_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:CompiledMetadataStateVerifier_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:TestIdBuilder_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/compiler:TestMemoryFileManager_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/compiler:TestStringJavaSource_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/generation:TestJavaPackageAndImportBuilder_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/binary:TestDistributedBinaryGraphSerialization_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/binary:TestStringCaching_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/model:TestObj_lib",
+        "@legend_maven//:junit_junit",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_testutils",
+    ],
+)
+
+java_test(
+    name = "TestCompiledCeiling",
+    srcs = ["TestCompiledCeiling.java"],
+    test_class = "org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.base.math.TestCompiledCeiling",
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:platform_metadata",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:CompiledClassloaderStateVerifier_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:CompiledMetadataStateVerifier_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:TestIdBuilder_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/compiler:TestMemoryFileManager_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/compiler:TestStringJavaSource_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/generation:TestJavaPackageAndImportBuilder_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/binary:TestDistributedBinaryGraphSerialization_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/binary:TestStringCaching_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/model:TestObj_lib",
+        "@legend_maven//:junit_junit",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_testutils",
+    ],
+)
+
+java_test(
+    name = "TestCompiledDivide",
+    srcs = ["TestCompiledDivide.java"],
+    test_class = "org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.base.math.TestCompiledDivide",
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:platform_metadata",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:CompiledClassloaderStateVerifier_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:CompiledMetadataStateVerifier_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:TestIdBuilder_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/compiler:TestMemoryFileManager_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/compiler:TestStringJavaSource_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/generation:TestJavaPackageAndImportBuilder_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/binary:TestDistributedBinaryGraphSerialization_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/binary:TestStringCaching_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/model:TestObj_lib",
+        "@legend_maven//:junit_junit",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_testutils",
+    ],
+)
+
+java_test(
+    name = "TestCompiledFloor",
+    srcs = ["TestCompiledFloor.java"],
+    test_class = "org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.base.math.TestCompiledFloor",
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:platform_metadata",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:CompiledClassloaderStateVerifier_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:CompiledMetadataStateVerifier_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:TestIdBuilder_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/compiler:TestMemoryFileManager_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/compiler:TestStringJavaSource_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/generation:TestJavaPackageAndImportBuilder_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/binary:TestDistributedBinaryGraphSerialization_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/binary:TestStringCaching_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/model:TestObj_lib",
+        "@legend_maven//:junit_junit",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_testutils",
+    ],
+)
+
+java_test(
+    name = "TestCompiledPrecedence",
+    srcs = ["TestCompiledPrecedence.java"],
+    test_class = "org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.base.math.TestCompiledPrecedence",
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:platform_metadata",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:CompiledClassloaderStateVerifier_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:CompiledMetadataStateVerifier_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:TestIdBuilder_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/compiler:TestMemoryFileManager_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/compiler:TestStringJavaSource_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/generation:TestJavaPackageAndImportBuilder_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/binary:TestDistributedBinaryGraphSerialization_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/binary:TestStringCaching_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/model:TestObj_lib",
+        "@legend_maven//:junit_junit",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_testutils",
+    ],
+)
+
+java_test(
+    name = "TestCompiledRound",
+    srcs = ["TestCompiledRound.java"],
+    test_class = "org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.base.math.TestCompiledRound",
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:platform_metadata",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:CompiledClassloaderStateVerifier_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:CompiledMetadataStateVerifier_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:TestIdBuilder_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/compiler:TestMemoryFileManager_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/compiler:TestStringJavaSource_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/generation:TestJavaPackageAndImportBuilder_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/binary:TestDistributedBinaryGraphSerialization_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/binary:TestStringCaching_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/model:TestObj_lib",
+        "@legend_maven//:junit_junit",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_testutils",
+    ],
+)
+
+java_test(
+    name = "TestCompiledTimes",
+    srcs = ["TestCompiledTimes.java"],
+    test_class = "org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.base.math.TestCompiledTimes",
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:platform_metadata",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:CompiledClassloaderStateVerifier_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:CompiledMetadataStateVerifier_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:TestIdBuilder_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/compiler:TestMemoryFileManager_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/compiler:TestStringJavaSource_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/generation:TestJavaPackageAndImportBuilder_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/binary:TestDistributedBinaryGraphSerialization_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/binary:TestStringCaching_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/model:TestObj_lib",
+        "@legend_maven//:junit_junit",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_testutils",
+    ],
+)
+
+java_test(
+    name = "TestPowCompiled",
+    srcs = ["TestPowCompiled.java"],
+    test_class = "org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.base.math.TestPowCompiled",
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:platform_metadata",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:CompiledClassloaderStateVerifier_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:CompiledMetadataStateVerifier_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:TestIdBuilder_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/compiler:TestMemoryFileManager_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/compiler:TestStringJavaSource_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/generation:TestJavaPackageAndImportBuilder_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/binary:TestDistributedBinaryGraphSerialization_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/binary:TestStringCaching_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/model:TestObj_lib",
+        "@legend_maven//:junit_junit",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_testutils",
+    ],
+)
+
+java_test(
+    name = "TestRem",
+    srcs = ["TestRem.java"],
+    test_class = "org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.base.math.TestRem",
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:platform_metadata",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:CompiledClassloaderStateVerifier_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:CompiledMetadataStateVerifier_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:TestIdBuilder_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/compiler:TestMemoryFileManager_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/compiler:TestStringJavaSource_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/generation:TestJavaPackageAndImportBuilder_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/binary:TestDistributedBinaryGraphSerialization_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/binary:TestStringCaching_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/model:TestObj_lib",
+        "@legend_maven//:junit_junit",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_testutils",
+    ],
+)
+
+java_test(
+    name = "TestSqrt",
+    srcs = ["TestSqrt.java"],
+    test_class = "org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.base.math.TestSqrt",
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:platform_metadata",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:CompiledClassloaderStateVerifier_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:CompiledMetadataStateVerifier_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:TestIdBuilder_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/compiler:TestMemoryFileManager_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/compiler:TestStringJavaSource_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/generation:TestJavaPackageAndImportBuilder_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/binary:TestDistributedBinaryGraphSerialization_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/binary:TestStringCaching_lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/model:TestObj_lib",
+        "@legend_maven//:junit_junit",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_testutils",
+    ],
+)
+
+java_library(
+    name = "TestArcCosine_lib",
+    srcs = ["TestArcCosine.java"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:compiled_engine_boot",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:platform_metadata",
+        "@legend_maven//:junit_junit",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+)
+
+java_library(
+    name = "TestArcSine_lib",
+    srcs = ["TestArcSine.java"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:compiled_engine_boot",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:platform_metadata",
+        "@legend_maven//:junit_junit",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+)
+
+java_library(
+    name = "TestCompiledCeiling_lib",
+    srcs = ["TestCompiledCeiling.java"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:compiled_engine_boot",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:platform_metadata",
+        "@legend_maven//:junit_junit",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+)
+
+java_library(
+    name = "TestCompiledDivide_lib",
+    srcs = ["TestCompiledDivide.java"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:compiled_engine_boot",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:platform_metadata",
+        "@legend_maven//:junit_junit",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+)
+
+java_library(
+    name = "TestCompiledFloor_lib",
+    srcs = ["TestCompiledFloor.java"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:compiled_engine_boot",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:platform_metadata",
+        "@legend_maven//:junit_junit",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+)
+
+java_library(
+    name = "TestCompiledPrecedence_lib",
+    srcs = ["TestCompiledPrecedence.java"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:compiled_engine_boot",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:platform_metadata",
+        "@legend_maven//:junit_junit",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+)
+
+java_library(
+    name = "TestCompiledRound_lib",
+    srcs = ["TestCompiledRound.java"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:compiled_engine_boot",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:platform_metadata",
+        "@legend_maven//:junit_junit",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+)
+
+java_library(
+    name = "TestCompiledTimes_lib",
+    srcs = ["TestCompiledTimes.java"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:compiled_engine_boot",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:platform_metadata",
+        "@legend_maven//:junit_junit",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+)
+
+java_library(
+    name = "TestPowCompiled_lib",
+    srcs = ["TestPowCompiled.java"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:compiled_engine_boot",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:platform_metadata",
+        "@legend_maven//:junit_junit",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+)
+
+java_library(
+    name = "TestRem_lib",
+    srcs = ["TestRem.java"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:compiled_engine_boot",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:platform_metadata",
+        "@legend_maven//:junit_junit",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+)
+
+java_library(
+    name = "TestSqrt_lib",
+    srcs = ["TestSqrt.java"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:compiled_engine_boot",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:platform_metadata",
+        "@legend_maven//:junit_junit",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+)

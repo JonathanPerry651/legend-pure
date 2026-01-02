@@ -1,80 +1,39 @@
 load("@rules_java//java:defs.bzl", "java_library", "java_test")
 
-genrule(
-    name = "antlr_lexer_gen",
-    srcs = [
-         "src/main/antlr4/org/finos/legend/pure/m4/serialization/grammar/M4AntlrLexer.g4",
-         "src/main/antlr4/org/finos/legend/pure/m4/serialization/grammar/core/M4Fragment.g4",
-    ],
-    outs = [
-        "org/finos/legend/pure/m4/serialization/grammar/M4AntlrLexer.java",
-        "org/finos/legend/pure/m4/serialization/grammar/M4AntlrLexer.tokens",
-    ],
-    cmd = """
-        mkdir -p core
-        cp $(location src/main/antlr4/org/finos/legend/pure/m4/serialization/grammar/M4AntlrLexer.g4) .
-        cp $(location src/main/antlr4/org/finos/legend/pure/m4/serialization/grammar/core/M4Fragment.g4) core/
-        
-        $(location //legend-pure:antlr4_tool) \
-        -package org.finos.legend.pure.m4.serialization.grammar \
-        -lib core \
-        -o $(RULEDIR)/org/finos/legend/pure/m4/serialization/grammar \
-        M4AntlrLexer.g4
-    """,
-    tools = ["//legend-pure:antlr4_tool"],
+load("//legend-pure:grammar.bzl", "antlr_gen")
+
+antlr_gen(
+    name = "antlr_gen",
+    srcs = glob(["src/main/antlr4/**/*.g4"]),
+    tool = "//legend-pure:antlr4_tool",
+    visibility = ["//visibility:private"],
 )
 
-genrule(
-    name = "antlr_parser_gen",
-    srcs = [
-         "src/main/antlr4/org/finos/legend/pure/m4/serialization/grammar/M4AntlrParser.g4",
-         ":antlr_lexer_gen",
-    ],
-    outs = [
-        "org/finos/legend/pure/m4/serialization/grammar/M4AntlrParser.java",
-        "org/finos/legend/pure/m4/serialization/grammar/M4AntlrParserBaseListener.java",
-        "org/finos/legend/pure/m4/serialization/grammar/M4AntlrParserListener.java",
-        "org/finos/legend/pure/m4/serialization/grammar/M4AntlrParserBaseVisitor.java",
-        "org/finos/legend/pure/m4/serialization/grammar/M4AntlrParserVisitor.java",
-    ],
-    cmd = """
-        cp $(location src/main/antlr4/org/finos/legend/pure/m4/serialization/grammar/M4AntlrParser.g4) .
-        cp $(locations :antlr_lexer_gen) .
+load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_resource_copy")
 
-        $(location //legend-pure:antlr4_tool) \
-        -package org.finos.legend.pure.m4.serialization.grammar \
-        -visitor -listener \
-        -lib . \
-        -o $(RULEDIR)/org/finos/legend/pure/m4/serialization/grammar \
-        M4AntlrParser.g4
-    """,
-    tools = ["//legend-pure:antlr4_tool"],
-)
-
-genrule(
+pure_resource_copy(
     name = "antlr_resources",
-    srcs = ["src/main/antlr4/org/finos/legend/pure/m4/serialization/grammar/core/M4Fragment.g4"],
-    outs = ["antlr/M4Fragment.g4"],
-    cmd = "cp $< $@",
+    src = "src/main/antlr4/org/finos/legend/pure/m4/serialization/grammar/core/M4Fragment.g4",
+    out = "antlr/M4Fragment.g4",
 )
 
 java_library(
     name = "legend-pure-m4",
-    srcs = glob(["src/main/java/**/*.java"]) + [":antlr_lexer_gen", ":antlr_parser_gen"],
-    deps = [
-        "@maven//:org_eclipse_collections_eclipse_collections",
-        "@maven//:org_eclipse_collections_eclipse_collections_api",
-        "@maven//:org_apache_commons_commons_lang3",
-        "@maven//:org_antlr_antlr4_runtime",
-    ],
-    exports = [
-        "@maven//:org_eclipse_collections_eclipse_collections",
-        "@maven//:org_eclipse_collections_eclipse_collections_api",
-        "@maven//:org_apache_commons_commons_lang3",
-        "@maven//:org_antlr_antlr4_runtime",
-    ],
+    srcs = glob(["src/main/java/**/*.java"]) + [":antlr_gen"],
     resources = [":antlr_resources"],
     visibility = ["//visibility:public"],
+    exports = [
+        "@legend_maven//:org_antlr_antlr4_runtime",
+        "@legend_maven//:org_apache_commons_commons_lang3",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+    deps = [
+        "@legend_maven//:org_antlr_antlr4_runtime",
+        "@legend_maven//:org_apache_commons_commons_lang3",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
 )
 
 filegroup(
@@ -88,7 +47,7 @@ java_library(
     srcs = glob(["src/test/java/**/*.java"]),
     deps = [
         ":legend-pure-m4",
-        "@maven//:junit_junit",
+        "@legend_maven//:junit_junit",
     ],
 )
 
@@ -253,8 +212,6 @@ java_test(
     test_class = "org.finos.legend.pure.m4.serialization.TestSerializers_StreamWriterByteChannelReader",
     runtime_deps = [":test_sources"],
 )
-
-
 
 java_test(
     name = "TestSerialization",

@@ -1,21 +1,22 @@
 load("@rules_java//java:defs.bzl", "java_binary", "java_library")
+load("@rules_java//java:java_test.bzl", "java_test")
 
 java_library(
     name = "legend-pure-m3-bootstrap-generator",
     srcs = glob(["src/main/java/**/*.java"]),
+    visibility = ["//visibility:public"],
     deps = [
         "//legend-pure/legend-pure-core/legend-pure-m4",
-        "@maven//:org_eclipse_collections_eclipse_collections",
-        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
     ],
-    visibility = ["//visibility:public"],
 )
 
 java_binary(
     name = "CoreInstanceGenerator",
     main_class = "org.finos.legend.pure.m3.bootstrap.generator.CoreInstanceGenerator",
-    runtime_deps = [":legend-pure-m3-bootstrap-generator"],
     visibility = ["//visibility:public"],
+    runtime_deps = [":legend-pure-m3-bootstrap-generator"],
 )
 
 java_test(
@@ -24,8 +25,8 @@ java_test(
     test_class = "org.finos.legend.pure.m3.tools.TestJavaTools",
     deps = [
         ":legend-pure-m3-bootstrap-generator",
-        "@maven//:junit_junit",
-        "@maven//:org_eclipse_collections_eclipse_collections",
-        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@legend_maven//:junit_junit",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
     ],
 )

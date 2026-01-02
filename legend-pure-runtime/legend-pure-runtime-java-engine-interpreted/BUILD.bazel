@@ -6,13 +6,13 @@ java_library(
     resources = glob(["src/main/resources/**/*"]),
     visibility = ["//visibility:public"],
     deps = [
-        "//legend-pure/legend-pure-core/legend-pure-m4",
         "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-shared",
-        "@maven//:org_apache_commons_commons_lang3",
-        "@maven//:org_eclipse_collections_eclipse_collections",
-        "@maven//:org_eclipse_collections_eclipse_collections_api",
-        "@maven//:junit_junit",
+        "@legend_maven//:junit_junit",
+        "@legend_maven//:org_apache_commons_commons_lang3",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
     ],
 )
 
@@ -23,6 +23,6 @@ java_library(
 #         ":legend-pure-runtime-java-engine-interpreted",
 #         "//legend-pure/legend-pure-core/legend-pure-m3-core",
 #         "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
-#         "@maven//:org_eclipse_collections_eclipse_collections_testutils",
+#         "@legend_maven//:org_eclipse_collections_eclipse_collections_testutils",
 #     ],
 # )

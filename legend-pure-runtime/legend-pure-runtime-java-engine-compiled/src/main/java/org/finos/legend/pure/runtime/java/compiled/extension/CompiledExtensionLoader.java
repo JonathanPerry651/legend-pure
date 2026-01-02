@@ -23,7 +23,10 @@ public class CompiledExtensionLoader
 {
     public static MutableList<CompiledExtension> extensions()
     {
-        return Lists.mutable.withAll(ServiceLoader.load(CompiledExtension.class));
+        System.out.println("DEBUG: CompiledExtensionLoader.extensions() called");
+        MutableList<CompiledExtension> list = Lists.mutable.withAll(ServiceLoader.load(CompiledExtension.class));
+        System.out.println("DEBUG: CompiledExtensionLoader found " + list.size() + " extensions");
+        return list;
     }
 
     public static MutableList<CompiledExtension> extensions(ClassLoader classLoader)

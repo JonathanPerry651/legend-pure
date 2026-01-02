@@ -5,5 +5,5 @@ package(default_visibility = ["//visibility:public"])
 java_binary(
     name = "antlr4_tool",
     main_class = "org.antlr.v4.Tool",
-    runtime_deps = ["@maven//:org_antlr_antlr4"],
+    runtime_deps = ["@legend_maven//:org_antlr_antlr4"],
 )

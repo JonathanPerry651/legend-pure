@@ -177,7 +177,7 @@ public class CoreGen extends CoreHelper {
         return result;
     }
 
-    public static Object newObject(final Class<?> aClass, RichIterable<?> keyExpressions,
+    public static Object newObject(final Class<?> aClass, java.lang.Iterable keyExpressions,
             ElementOverride override, Function getterToOne, Function getterToMany, Object payload,
             PureFunction2 getterToOneExec, PureFunction2 getterToManyExec, ExecutionSupport es) {
         final ClassCache classCache = ((CompiledExecutionSupport) es).getClassCache();
@@ -185,7 +185,7 @@ public class CoreGen extends CoreHelper {
         final Any result;
         try {
             result = (Any) constructor.newInstance("");
-            keyExpressions = processKeyExpressions(classCache.getIfAbsentPutImplForType(aClass), result, keyExpressions,
+            keyExpressions = processKeyExpressions(classCache.getIfAbsentPutImplForType(aClass), result, (RichIterable) keyExpressions,
                     es);
         } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
             Throwable cause = (e instanceof InvocationTargetException) ? e.getCause() : e;
@@ -236,7 +236,7 @@ public class CoreGen extends CoreHelper {
     }
 
     public static Object newObject(GenericType genericType,
-            RichIterable<?> root_meta_pure_functions_lang_keyExpressions,
+            java.lang.Iterable root_meta_pure_functions_lang_keyExpressions,
             ElementOverride override,
             Function getterToOne,
             Function getterToMany,

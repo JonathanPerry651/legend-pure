@@ -9,8 +9,8 @@ java_library(
     deps = [
         "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-base",
         "//legend-pure/legend-pure-core/legend-pure-m4",
-        "@maven//:org_eclipse_collections_eclipse_collections",
-        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
     ],
 )
 
@@ -33,43 +33,36 @@ java_binary(
     ],
 )
 
-genrule(
+load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_par")
+
+pure_par(
     name = "pure_platform_precise_primitives_par",
-    srcs = [
-         ":precisePrimitives-base",
-         "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-base",
-    ],
-    outs = ["pure-platform_precise_primitives.par"],
-    cmd = """
-        $(location :PureJarGenerator) \
-        0.0.0-SNAPSHOT \
-        platform_precise_primitives \
-        $$(dirname $(location pure-platform_precise_primitives.par))
-    """,
-    tools = [":PureJarGenerator"],
+    out = "pure-platform_precise_primitives.par",
+    tool = ":PureJarGenerator",
+    repo_name = "platform_precise_primitives",
 )
 
 java_library(
     name = "pure_platform_precise_primitives_par_lib",
-    resources = [":pure_platform_precise_primitives_par"],
     resource_strip_prefix = "legend-pure/legend-pure-core/legend-pure-m3-precisePrimitives",
+    resources = [":pure_platform_precise_primitives_par"],
 )
 
 java_test(
     name = "TestPrecisePrimitivesCompiledStateIntegrity",
-    test_class = "org.finos.legend.pure.code.core.TestPrecisePrimitivesCompiledStateIntegrity",
     srcs = ["src/test/java/org/finos/legend/pure/code/core/TestPrecisePrimitivesCompiledStateIntegrity.java"],
+    test_class = "org.finos.legend.pure.code.core.TestPrecisePrimitivesCompiledStateIntegrity",
     runtime_deps = [
         ":legend-pure-m3-precisePrimitives",
         "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
-    ], 
+    ],
     deps = [
         ":precisePrimitives-base",
         "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-base",
         "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
         "//legend-pure/legend-pure-core/legend-pure-m4",
-        "@maven//:junit_junit",
-        "@maven//:org_eclipse_collections_eclipse_collections",
-        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@legend_maven//:junit_junit",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
     ],
 )

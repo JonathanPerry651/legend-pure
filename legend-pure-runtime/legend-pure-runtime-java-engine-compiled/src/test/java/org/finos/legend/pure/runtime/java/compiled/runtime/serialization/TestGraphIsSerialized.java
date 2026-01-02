@@ -42,6 +42,16 @@ import java.util.Formatter;
 
 public class TestGraphIsSerialized
 {
+    @org.junit.BeforeClass
+    public static void cleanUp()
+    {
+
+        System.setOut(new java.io.PrintStream(new java.io.OutputStream() { public void write(int b) {} }));
+        System.setProperty("org.finos.legend.pure.runtime.java.compiled.generation.orchestrator.Log", "OFF");
+        // Try to quiet standard loggers if they are used
+        java.util.logging.Logger.getLogger("").setLevel(java.util.logging.Level.WARNING);
+    }
+    
     @Test
     public void testNormalCompilation()
     {

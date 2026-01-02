@@ -1,0 +1,8 @@
+load("@rules_java//java:defs.bzl", "java_library")
+
+java_library(
+    name = "test_resources",
+    resource_strip_prefix = "legend-pure/legend-pure-core/legend-pure-m3-core/src/test/resources",
+    resources = glob(["**/*"]),
+    visibility = ["//visibility:public"],
+)

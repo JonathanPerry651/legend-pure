@@ -1,60 +1,13 @@
 load("@rules_java//java:defs.bzl", "java_library")
 
-genrule(
+load("//legend-pure:grammar.bzl", "antlr_gen")
+
+antlr_gen(
     name = "antlr_gen",
     srcs = glob(["src/main/antlr4/**/*.g4"]) + [
         "//legend-pure/legend-pure-core/legend-pure-m4:grammar_files",
     ],
-    outs = [
-        "org/finos/legend/pure/m2/inlinedsl/graph/serialization/grammar/GraphLexer.java",
-        "org/finos/legend/pure/m2/inlinedsl/graph/serialization/grammar/GraphLexer.tokens",
-        "org/finos/legend/pure/m2/inlinedsl/graph/serialization/grammar/GraphParser.java",
-        "org/finos/legend/pure/m2/inlinedsl/graph/serialization/grammar/GraphParserVisitor.java",
-        "org/finos/legend/pure/m2/inlinedsl/graph/serialization/grammar/GraphParserListener.java",
-        "org/finos/legend/pure/m2/inlinedsl/graph/serialization/grammar/GraphParserBaseVisitor.java",
-        "org/finos/legend/pure/m2/inlinedsl/graph/serialization/grammar/GraphParserBaseListener.java",
-    ],
-    cmd = """
-        set -e
-        mkdir -p antlr_flat
-        
-        # Copy all sources to antlr_flat
-        for f in $(SRCS); do
-            cp "$$f" antlr_flat/
-        done
-        
-        # 1. Lexer
-        $(location //legend-pure:antlr4_tool) \
-        -package org.finos.legend.pure.m2.inlinedsl.graph.serialization.grammar \
-        -visitor -listener \
-        -lib antlr_flat \
-        -o $(RULEDIR)/org/finos/legend/pure/m2/inlinedsl/graph/serialization/grammar \
-        antlr_flat/GraphLexer.g4
-
-        # Move outputs up if they were created in a subdirectory (Antlr behavior varies)
-        if [ -d "$(RULEDIR)/org/finos/legend/pure/m2/inlinedsl/graph/serialization/grammar/antlr_flat" ]; then
-            mv $(RULEDIR)/org/finos/legend/pure/m2/inlinedsl/graph/serialization/grammar/antlr_flat/* $(RULEDIR)/org/finos/legend/pure/m2/inlinedsl/graph/serialization/grammar/
-            rmdir $(RULEDIR)/org/finos/legend/pure/m2/inlinedsl/graph/serialization/grammar/antlr_flat
-        fi
-        
-        # Copy tokens to flat
-        cp $(RULEDIR)/org/finos/legend/pure/m2/inlinedsl/graph/serialization/grammar/GraphLexer.tokens antlr_flat/
-        
-        # 2. Parser
-        $(location //legend-pure:antlr4_tool) \
-        -package org.finos.legend.pure.m2.inlinedsl.graph.serialization.grammar \
-        -visitor -listener \
-        -lib antlr_flat \
-        -o $(RULEDIR)/org/finos/legend/pure/m2/inlinedsl/graph/serialization/grammar \
-        antlr_flat/GraphParser.g4
-        
-        # Move outputs up
-        if [ -d "$(RULEDIR)/org/finos/legend/pure/m2/inlinedsl/graph/serialization/grammar/antlr_flat" ]; then
-            mv $(RULEDIR)/org/finos/legend/pure/m2/inlinedsl/graph/serialization/grammar/antlr_flat/* $(RULEDIR)/org/finos/legend/pure/m2/inlinedsl/graph/serialization/grammar/
-            rmdir $(RULEDIR)/org/finos/legend/pure/m2/inlinedsl/graph/serialization/grammar/antlr_flat
-        fi
-    """,
-    tools = ["//legend-pure:antlr4_tool"],
+    tool = "//legend-pure:antlr4_tool",
 )
 
 java_library(
@@ -65,11 +18,11 @@ java_library(
     resources = glob(["src/main/resources/**/*"]),
     visibility = ["//visibility:public"],
     deps = [
-        "//legend-pure/legend-pure-core/legend-pure-m4",
         "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-graph/legend-pure-m2-dsl-graph-pure",
-        "@maven//:org_antlr_antlr4_runtime",
-        "@maven//:org_eclipse_collections_eclipse_collections",
-        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@legend_maven//:org_antlr_antlr4_runtime",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
     ],
 )

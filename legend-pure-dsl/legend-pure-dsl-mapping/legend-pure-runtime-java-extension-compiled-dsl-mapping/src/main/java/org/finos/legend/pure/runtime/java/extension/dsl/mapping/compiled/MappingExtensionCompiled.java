@@ -32,6 +32,10 @@ import java.util.List;
 
 public class MappingExtensionCompiled implements CompiledExtension
 {
+    public MappingExtensionCompiled()
+    {
+    }
+
     @Override
     public List<Procedure3<CoreInstance, JavaSourceCodeGenerator, ProcessorContext>> getExtraPackageableElementProcessors()
     {

@@ -1,103 +1,88 @@
 load("@rules_java//java:defs.bzl", "java_library")
+load("@rules_java//java:java_binary.bzl", "java_binary")
 load("//tools/build_rules:java_model_generation.bzl", "java_model_generation")
 
 java_model_generation(
     name = "java_gen",
-    model_name = "Mapping",
     factory_class = "org.finos.legend.pure.m2.dsl.mapping.serialization.grammar.v1.MappingParser,org.finos.legend.pure.m2.dsl.mapping.serialization.grammar.v1.OperationParser,org.finos.legend.pure.m2.dsl.mapping.serialization.grammar.v1.EnumerationMappingParser,org.finos.legend.pure.m2.dsl.mapping.serialization.grammar.v1.AggregationAwareParser",
+    model_name = "Mapping",
     tool = ":JavaModelFactoryGenerator_Mapping",
 )
 
 java_binary(
     name = "JavaModelFactoryGenerator_Mapping",
     main_class = "org.finos.legend.pure.runtime.java.compiled.generation.orchestrator.JavaModelFactoryGenerator",
+    visibility = ["//visibility:private"],
     runtime_deps = [
-        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-grammar",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure:m2-dsl-mapping-pure-gen",
-        "//legend-pure/legend-pure-core/legend-pure-m3-core",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-runtime-java-extension-compiled-dsl-store",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
     ],
-    visibility = ["//visibility:private"],
 )
 
 java_binary(
     name = "JavaCodeGeneration_Mapping",
     main_class = "org.finos.legend.pure.runtime.java.compiled.generation.orchestrator.JavaCodeGeneration",
+    visibility = ["//visibility:private"],
     runtime_deps = [
-        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
         "//legend-pure/legend-pure-core/legend-pure-m3-core",
         "//legend-pure/legend-pure-core/legend-pure-m4",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure",
-        "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-grammar",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure:pure_platform_dsl_mapping_par_lib",
-        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-grammar",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
     ],
-    visibility = ["//visibility:private"],
 )
 
-genrule(
+load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_jar_filter", "pure_java_code_gen")
+
+pure_java_code_gen(
     name = "generate_mapping_sources",
     srcs = [
-         "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure:pure_platform_dsl_mapping_par_lib",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure:pure_platform_dsl_mapping_par_lib",
     ],
-    outs = ["mapping_sources.srcjar", "gen_mapping.log"],
-    cmd = """
-        mkdir -p work_dir/classes
-        mkdir -p work_dir/target
-        
-        $(location :JavaCodeGeneration_Mapping) \
-            platform_dsl_mapping \
-            work_dir/classes \
-            work_dir/target \
-            > $(RULEDIR)/gen_mapping.log 2>&1 || (cat $(RULEDIR)/gen_mapping.log && exit 1)
-
-        # Zip sources
-        mkdir -p src_collection
-        if [ -n "$$(ls -A work_dir/target/generated-sources 2>/dev/null)" ]; then
-             cp -r work_dir/target/generated-sources/* src_collection/
-        fi
-        if [ -n "$$(ls -A work_dir/target/generated-test-sources 2>/dev/null)" ]; then
-             cp -r work_dir/target/generated-test-sources/* src_collection/
-        fi
-        
-        if [ -z "$$(find src_collection -type f)" ]; then
-             echo "No generated sources found in src_collection" >> $(RULEDIR)/gen_mapping.log
-             ls -R work_dir >> $(RULEDIR)/gen_mapping.log
-             exit 1
-        fi
-
-        cd src_collection
-        zip -q -r ../$(RULEDIR)/mapping_sources.srcjar .
-    """,
-    tools = [":JavaCodeGeneration_Mapping"],
+    repository = "platform_dsl_mapping",
+    tool = ":JavaCodeGeneration_Mapping",
 )
 
 genrule(
-    name = "filtered_java_gen",
+    name = "extract_mapping_registry",
     srcs = [":java_gen"],
-    outs = ["mapping_m3.srcjar"],
+    outs = ["mapping_registry.srcjar"],
     cmd = """
-        mkdir -p filtered_gen
-        cd filtered_gen
+        mkdir -p registry_out
+        cd registry_out
         unzip -q ../$(location :java_gen)
-        # Remove Root implementation classes to avoid duplicates/conflicts if any
-        # But we might need them? Usually java_gen makes model implementations.
-        # Check dsl-store again: it filtered org/finos/legend/pure/generated.
-        # But java_gen usually writes to org/finos/legend/pure/generated.
-        # If we remove it, we lose M3 impls.
-        # But generate_mapping_sources also writes to org/finos/legend/pure/generated?
-        # Yes, standard compiled code.
-        # If they overlap, we have duplicates.
-        # dsl-store removed it. So we remove it too.
-        rm -rf org/finos/legend/pure/generated
-        zip -q -r ../$(RULEDIR)/mapping_m3.srcjar .
+        
+        # Create a clean directory for registry
+        mkdir -p registry_clean/org/finos/legend/pure/generated
+        
+        # Copy ONLY the registry
+        cp org/finos/legend/pure/generated/MappingJavaModelFactoryRegistry.java registry_clean/org/finos/legend/pure/generated/
+        
+        # Zip only the registry
+        cd registry_clean
+        zip -q -r ../../$(location mapping_registry.srcjar) .
     """,
 )
 
 java_library(
     name = "legend-pure-runtime-java-extension-compiled-dsl-mapping",
-    srcs = [":filtered_java_gen", ":generate_mapping_sources"] + glob(["src/main/java/**/*.java"]),
+    srcs = [
+        ":extract_mapping_registry",
+        ":generate_mapping_sources",
+    ] + glob(["src/main/java/**/*.java"]),
+    javacopts = [
+        "-Xep:IdentityBinaryExpression:OFF",
+        "-Xep:IsInstanceIncompatibleType:OFF",
+        "-Xep:ComparableType:OFF",
+        "-Xep:SelfEquals:OFF",
+    ],
     resources = glob(["src/main/resources/**/*"]),
     visibility = ["//visibility:public"],
     deps = [
@@ -105,15 +90,9 @@ java_library(
         "//legend-pure/legend-pure-core/legend-pure-m4",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure",
-        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-runtime-java-extension-compiled-dsl-store",
-        "@maven//:org_eclipse_collections_eclipse_collections",
-        "@maven//:org_eclipse_collections_eclipse_collections_api",
-    ],
-    javacopts = [
-        "-Xep:IdentityBinaryExpression:OFF",
-        "-Xep:IsInstanceIncompatibleType:OFF",
-        "-Xep:ComparableType:OFF",
-        "-Xep:SelfEquals:OFF",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
     ],
 )

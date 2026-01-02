@@ -13,6 +13,7 @@
 // limitations under the License.
 
 package org.finos.legend.pure.generated;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.functions.lang.KeyValue;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function0;
@@ -166,11 +167,11 @@ public class CoreGen extends CoreHelper
         return org.finos.legend.pure.generated.platform_pure_essential_string_toString_toRepresentation.Root_meta_pure_functions_string_toRepresentation_Any_1__String_1_(any, es);
     }
 
-    public static RichIterable<? extends Root_meta_pure_functions_lang_KeyValue> processKeyExpressions(java.lang.Class<?> _class, Object instance, RichIterable<? extends Root_meta_pure_functions_lang_KeyValue> keyExpressions, ExecutionSupport es)
+    public static RichIterable<? extends KeyValue> processKeyExpressions(java.lang.Class<?> _class, Object instance, RichIterable<? extends KeyValue> keyExpressions, ExecutionSupport es)
     {
-        MutableList<Root_meta_pure_functions_lang_KeyValue> result = Lists.mutable.empty();
+        MutableList<KeyValue> result = Lists.mutable.empty();
         MutableSet<String> keys = Sets.mutable.empty();
-        for (Root_meta_pure_functions_lang_KeyValue kv : keyExpressions)
+        for (KeyValue kv : keyExpressions)
         {
             result.add(kv);
             keys.add(kv._key());
@@ -190,7 +191,7 @@ public class CoreGen extends CoreHelper
         return result;
     }
 
-    public static Object newObject(final Class<?> aClass, RichIterable<? extends Root_meta_pure_functions_lang_KeyValue> keyExpressions, ElementOverride override, Function getterToOne, Function getterToMany, Object payload, PureFunction2 getterToOneExec, PureFunction2 getterToManyExec, ExecutionSupport es)
+    public static Object newObject(final Class<?> aClass, java.lang.Iterable keyExpressions, ElementOverride override, Function getterToOne, Function getterToMany, Object payload, PureFunction2 getterToOneExec, PureFunction2 getterToManyExec, ExecutionSupport es)
     {
         final ClassCache classCache = ((CompiledExecutionSupport) es).getClassCache();
         Constructor<?> constructor = classCache.getIfAbsentPutConstructorForType(aClass);
@@ -198,7 +199,7 @@ public class CoreGen extends CoreHelper
         try
         {
             result = (Any) constructor.newInstance("");
-            keyExpressions = processKeyExpressions(classCache.getIfAbsentPutImplForType(aClass), result, keyExpressions, es);
+            keyExpressions = processKeyExpressions(classCache.getIfAbsentPutImplForType(aClass), result, (RichIterable) keyExpressions, es);
         }
         catch (InvocationTargetException | InstantiationException | IllegalAccessException e)
         {
@@ -212,10 +213,10 @@ public class CoreGen extends CoreHelper
             }
             throw new RuntimeException(builder.toString(), cause);
         }
-        keyExpressions.forEach(new DefendedProcedure<Root_meta_pure_functions_lang_KeyValue>()
+        keyExpressions.forEach(new DefendedProcedure<KeyValue>()
         {
             @Override
-            public void value(Root_meta_pure_functions_lang_KeyValue keyValue)
+            public void value(KeyValue keyValue)
             {
                 Method m = classCache.getIfAbsentPutPropertySetterMethodForType(aClass, keyValue._key());
                 try
@@ -251,7 +252,7 @@ public class CoreGen extends CoreHelper
     }
 
     public static Object newObject(GenericType genericType,
-                                   RichIterable<? extends Root_meta_pure_functions_lang_KeyValue> root_meta_pure_functions_lang_keyExpressions,
+                                   java.lang.Iterable root_meta_pure_functions_lang_keyExpressions,
                                    ElementOverride override,
                                    Function getterToOne,
                                    Function getterToMany,

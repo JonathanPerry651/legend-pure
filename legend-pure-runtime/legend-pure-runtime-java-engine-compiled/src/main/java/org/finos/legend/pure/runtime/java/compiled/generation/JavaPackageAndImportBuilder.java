@@ -43,11 +43,15 @@ public class JavaPackageAndImportBuilder
     private static final String CODE_GEN_PACKAGE_NAME = BASE_PACKAGE_NAME + ".generated";
     private static final String BASE_PACKAGE_FOLDER = CODE_GEN_PACKAGE_NAME.replace('.', '/');
 
-    public static final SetIterable<String> M3_CLASSES = Sets.mutable
+    public static final SetIterable<String> M3_CLASSES;
+    
+    static {
+        M3_CLASSES = Sets.mutable
             .withAll(M3CoreInstanceFactoryRegistry.ALL_PATHS)
             .withAll(M3PlatformCoreInstanceFactoryRegistry.ALL_PATHS)
             .withAll(CompiledExtensionLoader.extensions().flatCollect(CompiledExtension::getExtraCorePath))
             .asUnmodifiable();
+    }
 
     private JavaPackageAndImportBuilder()
     {

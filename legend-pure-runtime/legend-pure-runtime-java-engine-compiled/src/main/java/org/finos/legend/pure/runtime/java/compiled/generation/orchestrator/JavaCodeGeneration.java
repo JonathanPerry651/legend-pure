@@ -54,6 +54,17 @@ public class JavaCodeGeneration
 {
     public static void main(String... args)
     {
+        System.out.println("DEBUG: Classpath: " + System.getProperty("java.class.path"));
+        try {
+             Class.forName("org.finos.legend.pure.m3.coreinstance.meta.core.runtime.Connection");
+             System.out.println("DEBUG: Connection class FOUND");
+        } catch (ClassNotFoundException e) {
+             System.out.println("DEBUG: Connection class NOT FOUND");
+        }
+        
+        System.out.println("DEBUG: Extension detail:");
+        org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtensionLoader.extensions().forEach(e -> System.out.println("  Extension: " + e.getClass().getName()));
+        
         Log log = new Log()
         {
             @Override
@@ -87,24 +98,72 @@ public class JavaCodeGeneration
                 System.out.println(s);
             }
         };
-        doIt(
-                Sets.mutable.with(args[0]),
-                Sets.mutable.empty(),
-                Sets.mutable.empty(),
-                GenerationType.modular,
-                false,
-                false,
-                args.length == 4 ? args[3] : "",
-                true,
-                true,
-                true,
-                true,
-                true,
-                new File(args[1]),
-                new File(args[2]),
-                true,
-                log
-        );
+        
+        // Legacy mode assumed since we reverted source-based generation support
+        {
+            // Legacy mode: repository-based discovery
+            doIt(
+                    Sets.mutable.with(args[0]),
+                    Sets.mutable.empty(),
+                    Sets.mutable.empty(),
+                    GenerationType.modular,
+                    false,
+                    false,
+                    args.length == 4 ? args[3] : "",
+                    true,
+                    true,
+                    true,
+                    true,
+                    true,
+                    new File(args[1]),
+                    new File(args[2]),
+                    true,
+                    log
+            );
+        }
+    }
+    
+    private static String getNamedArg(String[] args, String name)
+    {
+        for (String arg : args)
+        {
+            if (arg.startsWith(name + "="))
+            {
+                return arg.substring(name.length() + 1);
+            }
+        }
+        return null;
+    }
+    
+    public static void doItWithSources(Set<String> sourceFiles, File outputDirectory, Log log)
+    {
+        // TODO: Implement full source-file-based generation
+        // For now, create a placeholder Java file to verify the rule works
+        log.info("Generating from explicit sources: " + sourceFiles);
+        log.info("Output dir: " + outputDirectory);
+        
+        try
+        {
+            Path generatedSources = outputDirectory.toPath().resolve("target/generated-sources");
+            java.nio.file.Files.createDirectories(generatedSources);
+            
+            // Create a placeholder Java file
+            Path packageDir = generatedSources.resolve("org/finos/legend/pure/generated");
+            java.nio.file.Files.createDirectories(packageDir);
+            
+            Path javaFile = packageDir.resolve("PlaceholderClass.java");
+            java.nio.file.Files.writeString(javaFile, 
+                "package org.finos.legend.pure.generated;\n\n" +
+                "// Generated from Pure sources: " + sourceFiles + "\n" +
+                "public class PlaceholderClass {}\n"
+            );
+            
+            log.info("Created placeholder: " + javaFile);
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     public static void doIt(Set<String> repositories,
@@ -144,8 +203,18 @@ public class JavaCodeGeneration
                             boolean generatePureTests,
                             Log log)
     {
+        System.out.println("DEBUG: JavaCodeGeneration.doIt START");
+        System.out.println("DEBUG: ClassLoader: " + Thread.currentThread().getContextClassLoader());
+        System.out.println("DEBUG: Checking extensions before M3_CLASSES init...");
+        try {
+            System.out.println("DEBUG: Extension count: " + org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtensionLoader.extensions().size());
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+
         // DO NOT DELETE - Needed to avoid circular calls later during static initialization
         SetIterable<String> res = JavaPackageAndImportBuilder.M3_CLASSES;
+        System.out.println("DEBUG: M3_CLASSES initialized. Size: " + res.size());
         // DO NOT DELETE - Needed to avoid circular calls later during static initialization
 
         if (skip)

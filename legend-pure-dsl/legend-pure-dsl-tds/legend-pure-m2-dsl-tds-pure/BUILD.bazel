@@ -1,49 +1,77 @@
+load("@rules_java//java:java_binary.bzl", "java_binary")
+load("@rules_java//java:java_library.bzl", "java_library")
 load("//tools/build_rules:pure_generation.bzl", "pure_model_generation")
+load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_par")
 
 java_library(
     name = "m2-dsl-tds-pure-boot",
     srcs = glob(["src/main/java/**/*.java"]),
     resources = glob(["src/main/resources/**/*"]),
+    visibility = ["//visibility:public"],
     deps = [
         "//legend-pure/legend-pure-core/legend-pure-m3-core",
         "//legend-pure/legend-pure-core/legend-pure-m4",
-        "@maven//:org_eclipse_collections_eclipse_collections",
-        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
     ],
-    visibility = ["//visibility:public"],
 )
 
 java_binary(
     name = "M3CoreInstanceGenerator",
     main_class = "org.finos.legend.pure.m3.generator.bootstrap.M3CoreInstanceGenerator",
-    runtime_deps = [
-        "//legend-pure/legend-pure-core/legend-pure-m3-core",
-        ":m2-dsl-tds-pure-boot",
-    ],
     visibility = ["//visibility:public"],
+    runtime_deps = [
+        ":m2-dsl-tds-pure-boot",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+    ],
 )
 
 pure_model_generation(
     name = "pure_gen",
     srcs = glob(["src/main/resources/**/*.pure"]),
-    visibility = ["//visibility:public"],
     model_name = "TDS",
     source_path = "/platform_dsl_tds/tds.pure",
     tool = ":M3CoreInstanceGenerator",
+    visibility = ["//visibility:public"],
 )
 
 java_library(
     name = "legend-pure-m2-dsl-tds-pure",
     srcs = [":pure_gen"],
+    visibility = ["//visibility:public"],
+    exports = [
+        ":m2-dsl-tds-pure-boot",
+    ],
     deps = [
         ":m2-dsl-tds-pure-boot",
         "//legend-pure/legend-pure-core/legend-pure-m3-core",
         "//legend-pure/legend-pure-core/legend-pure-m4",
-        "@maven//:org_eclipse_collections_eclipse_collections",
-        "@maven//:org_eclipse_collections_eclipse_collections_api",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
     ],
-    exports = [
+)
+
+java_binary(
+    name = "PureJarGenerator",
+    main_class = "org.finos.legend.pure.m3.generator.par.PureJarGenerator",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
         ":m2-dsl-tds-pure-boot",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
     ],
+)
+
+pure_par(
+    name = "pure_platform_dsl_tds_par",
+    out = "pure-platform_dsl_tds.par",
+    tool = ":PureJarGenerator",
+    repo_name = "platform_dsl_tds",
+    visibility = ["//visibility:public"],
+)
+
+java_library(
+    name = "pure_platform_dsl_tds_par_lib",
+    resource_strip_prefix = "legend-pure/legend-pure-dsl/legend-pure-dsl-tds/legend-pure-m2-dsl-tds-pure",
+    resources = [":pure-platform_dsl_tds.par"],
     visibility = ["//visibility:public"],
 )

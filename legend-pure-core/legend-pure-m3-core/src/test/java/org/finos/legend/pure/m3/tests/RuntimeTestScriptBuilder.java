@@ -323,7 +323,7 @@ public final class RuntimeTestScriptBuilder extends RuntimeActionRunner
                 }
                 else
                 {
-                    AbstractPureTestWithCoreCompiledPlatform.assertPureException(this.exceptionClass, this.message,
+                    PureAssertions.assertPureException(this.exceptionClass, this.message,
                             this.sourceId, this.lineNumber, this.columnNumber, e);
                 }
             }
@@ -373,7 +373,7 @@ public final class RuntimeTestScriptBuilder extends RuntimeActionRunner
                 }
                 else
                 {
-                    AbstractPureTestWithCoreCompiledPlatform.assertPureException(this.exceptionClass, this.message,
+                    PureAssertions.assertPureException(this.exceptionClass, this.message,
                             this.sourceId, this.lineNumber, this.columnNumber, e);
                 }
                 for (String path : this.processed)

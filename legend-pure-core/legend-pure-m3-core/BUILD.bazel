@@ -1,4 +1,15 @@
 load("@rules_java//java:defs.bzl", "java_library")
+load("@rules_java//java:java_binary.bzl", "java_binary")
+load(":pure.bzl", "PURE_PLATFORM_VERSION", "pure_antlr_gen", "pure_generator", "pure_par", "pure_pct_report")
+
+# ... (existing content)
+
+# 2b. Platform Properties Generation
+genrule(
+    name = "platform_properties_gen",
+    outs = ["org/finos/legend/pure/platform.properties"],
+    cmd = "echo 'version=%s' > $(location org/finos/legend/pure/platform.properties)" % PURE_PLATFORM_VERSION,
+)
 
 filegroup(
     name = "grammar_files",
@@ -15,9 +26,8 @@ filegroup(
 )
 
 # 1. Antlr Generation
-genrule(
+pure_antlr_gen(
     name = "antlr_gen",
-    visibility = ["//visibility:public"],
     srcs = [
         "src/main/antlr4/org/finos/legend/pure/m3/serialization/grammar/m3parser/antlr/M3Lexer.g4",
         "src/main/antlr4/org/finos/legend/pure/m3/serialization/grammar/m3parser/antlr/M3Parser.g4",
@@ -26,234 +36,124 @@ genrule(
         "src/main/antlr4/org/finos/legend/pure/m3/serialization/grammar/top/antlr/TopAntlrLexer.g4",
         "src/main/antlr4/org/finos/legend/pure/m3/serialization/grammar/top/antlr/TopAntlrParser.g4",
         "src/main/antlr4/org/finos/legend/pure/m3/serialization/grammar/treepathparser/TreePath.g4",
-    ] + [
-        "//legend-pure/legend-pure-core/legend-pure-m4:grammar_files",
     ],
     outs = [
-        "org/finos/legend/pure/m3/serialization/grammar/m3parser/antlr/M3Parser.java",
-        "org/finos/legend/pure/m3/serialization/grammar/m3parser/antlr/M3ParserVisitor.java",
-        "org/finos/legend/pure/m3/serialization/grammar/m3parser/antlr/M3ParserListener.java",
-        "org/finos/legend/pure/m3/serialization/grammar/m3parser/antlr/M3ParserBaseVisitor.java",
-        "org/finos/legend/pure/m3/serialization/grammar/m3parser/antlr/M3ParserBaseListener.java",
         "org/finos/legend/pure/m3/serialization/grammar/m3parser/antlr/M3Lexer.java",
         "org/finos/legend/pure/m3/serialization/grammar/m3parser/antlr/M3Lexer.tokens",
-        
-        "org/finos/legend/pure/m3/serialization/grammar/top/antlr/TopAntlrParser.java",
-        "org/finos/legend/pure/m3/serialization/grammar/top/antlr/TopAntlrParserVisitor.java",
-        "org/finos/legend/pure/m3/serialization/grammar/top/antlr/TopAntlrParserListener.java",
-        "org/finos/legend/pure/m3/serialization/grammar/top/antlr/TopAntlrParserBaseVisitor.java",
-        "org/finos/legend/pure/m3/serialization/grammar/top/antlr/TopAntlrParserBaseListener.java",
+        "org/finos/legend/pure/m3/serialization/grammar/m3parser/antlr/M3Parser.java",
+        "org/finos/legend/pure/m3/serialization/grammar/m3parser/antlr/M3ParserBaseListener.java",
+        "org/finos/legend/pure/m3/serialization/grammar/m3parser/antlr/M3ParserBaseVisitor.java",
+        "org/finos/legend/pure/m3/serialization/grammar/m3parser/antlr/M3ParserListener.java",
+        "org/finos/legend/pure/m3/serialization/grammar/m3parser/antlr/M3ParserVisitor.java",
         "org/finos/legend/pure/m3/serialization/grammar/top/antlr/TopAntlrLexer.java",
         "org/finos/legend/pure/m3/serialization/grammar/top/antlr/TopAntlrLexer.tokens",
-
-        "org/finos/legend/pure/m3/serialization/grammar/treepathparser/TreePathParser.java",
-        "org/finos/legend/pure/m3/serialization/grammar/treepathparser/TreePathListener.java",
-        "org/finos/legend/pure/m3/serialization/grammar/treepathparser/TreePathVisitor.java",
+        "org/finos/legend/pure/m3/serialization/grammar/top/antlr/TopAntlrParser.java",
+        "org/finos/legend/pure/m3/serialization/grammar/top/antlr/TopAntlrParserBaseListener.java",
+        "org/finos/legend/pure/m3/serialization/grammar/top/antlr/TopAntlrParserBaseVisitor.java",
+        "org/finos/legend/pure/m3/serialization/grammar/top/antlr/TopAntlrParserListener.java",
+        "org/finos/legend/pure/m3/serialization/grammar/top/antlr/TopAntlrParserVisitor.java",
         "org/finos/legend/pure/m3/serialization/grammar/treepathparser/TreePathBaseListener.java",
         "org/finos/legend/pure/m3/serialization/grammar/treepathparser/TreePathBaseVisitor.java",
         "org/finos/legend/pure/m3/serialization/grammar/treepathparser/TreePathLexer.java",
         "org/finos/legend/pure/m3/serialization/grammar/treepathparser/TreePathLexer.tokens",
+        "org/finos/legend/pure/m3/serialization/grammar/treepathparser/TreePathListener.java",
+        "org/finos/legend/pure/m3/serialization/grammar/treepathparser/TreePathParser.java",
+        "org/finos/legend/pure/m3/serialization/grammar/treepathparser/TreePathVisitor.java",
     ],
-    cmd = """
-        set -e
-        mkdir -p antlr_flat
-        
-        # Copy all sources (m3 and m4) to antlr_flat
-        for f in $(SRCS); do
-            cp "$$f" antlr_flat/
-        done
-        
-        # 1. Lexers (Generates .tokens files)
-        # M3Lexer
-        $(location //legend-pure:antlr4_tool) \\
-        -package org.finos.legend.pure.m3.serialization.grammar.m3parser.antlr \\
-        -visitor -listener \\
-        -lib antlr_flat \\
-        -o $(RULEDIR)/org/finos/legend/pure/m3/serialization/grammar/m3parser/antlr \\
-        antlr_flat/M3Lexer.g4
-        
-        # Move outputs up from antlr_flat subdir
-        mv $(RULEDIR)/org/finos/legend/pure/m3/serialization/grammar/m3parser/antlr/antlr_flat/* $(RULEDIR)/org/finos/legend/pure/m3/serialization/grammar/m3parser/antlr/
-        rmdir $(RULEDIR)/org/finos/legend/pure/m3/serialization/grammar/m3parser/antlr/antlr_flat
-        
-        # TopAntlrLexer
-        $(location //legend-pure:antlr4_tool) \\
-        -package org.finos.legend.pure.m3.serialization.grammar.top.antlr \\
-        -visitor -listener \\
-        -lib antlr_flat \\
-        -o $(RULEDIR)/org/finos/legend/pure/m3/serialization/grammar/top/antlr \\
-        antlr_flat/TopAntlrLexer.g4
-
-        # Move outputs up from antlr_flat subdir
-        mv $(RULEDIR)/org/finos/legend/pure/m3/serialization/grammar/top/antlr/antlr_flat/* $(RULEDIR)/org/finos/legend/pure/m3/serialization/grammar/top/antlr/
-        rmdir $(RULEDIR)/org/finos/legend/pure/m3/serialization/grammar/top/antlr/antlr_flat
-
-        # 2. Copy generated tokens to antlr_flat so Parsers can find them
-        cp $(RULEDIR)/org/finos/legend/pure/m3/serialization/grammar/m3parser/antlr/M3Lexer.tokens antlr_flat/
-        cp $(RULEDIR)/org/finos/legend/pure/m3/serialization/grammar/top/antlr/TopAntlrLexer.tokens antlr_flat/
-
-        # 3. Parsers
-        # M3Parser
-        $(location //legend-pure:antlr4_tool) \\
-        -package org.finos.legend.pure.m3.serialization.grammar.m3parser.antlr \\
-        -visitor -listener \\
-        -lib antlr_flat \\
-        -o $(RULEDIR)/org/finos/legend/pure/m3/serialization/grammar/m3parser/antlr \\
-        antlr_flat/M3Parser.g4
-        
-        # Move outputs up
-        mv $(RULEDIR)/org/finos/legend/pure/m3/serialization/grammar/m3parser/antlr/antlr_flat/* $(RULEDIR)/org/finos/legend/pure/m3/serialization/grammar/m3parser/antlr/
-        rmdir $(RULEDIR)/org/finos/legend/pure/m3/serialization/grammar/m3parser/antlr/antlr_flat
-        
-        # TopAntlrParser
-        $(location //legend-pure:antlr4_tool) \\
-        -package org.finos.legend.pure.m3.serialization.grammar.top.antlr \\
-        -visitor -listener \\
-        -lib antlr_flat \\
-        -o $(RULEDIR)/org/finos/legend/pure/m3/serialization/grammar/top/antlr \\
-        antlr_flat/TopAntlrParser.g4
-
-        # Move outputs up
-        mv $(RULEDIR)/org/finos/legend/pure/m3/serialization/grammar/top/antlr/antlr_flat/* $(RULEDIR)/org/finos/legend/pure/m3/serialization/grammar/top/antlr/
-        rmdir $(RULEDIR)/org/finos/legend/pure/m3/serialization/grammar/top/antlr/antlr_flat
-
-        # 4. TreePath (Combined)
-        $(location //legend-pure:antlr4_tool) \\
-        -package org.finos.legend.pure.m3.serialization.grammar.treepathparser \\
-        -visitor -listener \\
-        -lib antlr_flat \\
-        -o $(RULEDIR)/org/finos/legend/pure/m3/serialization/grammar/treepathparser \\
-        antlr_flat/TreePath.g4
-        
-        # Move outputs up
-        mv $(RULEDIR)/org/finos/legend/pure/m3/serialization/grammar/treepathparser/antlr_flat/* $(RULEDIR)/org/finos/legend/pure/m3/serialization/grammar/treepathparser/
-        rmdir $(RULEDIR)/org/finos/legend/pure/m3/serialization/grammar/treepathparser/antlr_flat
-    """,
-    tools = ["//legend-pure:antlr4_tool"],
+    grammar_files = ["//legend-pure/legend-pure-core/legend-pure-m4:grammar_files"],
+    visibility = ["//visibility:public"],
 )
 
 # 2. Bootstrap Generator
-genrule(
+# 2. Bootstrap Generator
+pure_generator(
     name = "bootstrap_gen",
-    visibility = ["//visibility:public"],
     srcs = glob(["src/main/resources/**/*.pure"]),
-    outs = ["bootstrap_gen.srcjar"],
-    cmd = """
-        mkdir -p bootstrap_out
-        
-        # We need to pass absolute path or relative to workspace for resources? 
-        # The generator likely uses java.io.File.
-        # Validating path: "legend-pure/legend-pure-core/legend-pure-m3-core/src/main/resources"
-        ls -R legend-pure/legend-pure-core/legend-pure-m3-core/src/main/resources
-        
-        $(location //legend-pure/legend-pure-core/legend-pure-m3-bootstrap-generator:CoreInstanceGenerator) \\
-        bootstrap_out/ \\
-        legend-pure/legend-pure-core/legend-pure-m3-core/src/main/resources \\
-        /platform/pure/grammar/m3.pure
-        
-        # Zip into srcjar
-        cd bootstrap_out
-        zip -q -r ../$(OUTS) .
-    """,
-    tools = ["//legend-pure/legend-pure-core/legend-pure-m3-bootstrap-generator:CoreInstanceGenerator"],
+    out = "bootstrap_gen.srcjar",
+    args_list = [
+        "legend-pure/legend-pure-core/legend-pure-m3-core/src/main/resources",
+        "/platform/pure/grammar/m3.pure",
+    ],
+    tool = "//legend-pure/legend-pure-core/legend-pure-m3-bootstrap-generator:CoreInstanceGenerator",
+    visibility = ["//visibility:public"],
 )
 
-# 2b. Platform Properties Generation
-genrule(
-    name = "platform_properties_gen",
-    outs = ["org/finos/legend/pure/platform.properties"],
-    cmd = "echo 'version=0.0.0-SNAPSHOT' > $(location org/finos/legend/pure/platform.properties)",
-)
+
 
 java_library(
     name = "platform_properties_lib",
-    resources = [":platform_properties_gen"],
     resource_strip_prefix = "legend-pure/legend-pure-core/legend-pure-m3-core",
+    resources = [":platform_properties_gen"],
     visibility = ["//visibility:public"],
 )
 
 # 3. Base Library
 
-
 # 4. Lazy Generator
 java_binary(
     name = "M3LazyCoreInstanceGenerator",
     main_class = "org.finos.legend.pure.m3.coreinstance.lazy.generator.M3LazyCoreInstanceGenerator",
-    runtime_deps = [":m3-core-base"],
+    runtime_deps = [
+        ":m3-core-base",
+        ":m3_core_resources",
+    ],
 )
 
-genrule(
+pure_generator(
     name = "lazy_gen",
     srcs = glob(["src/main/resources/**/*.pure"]),
-    outs = ["lazy_gen.srcjar"],
-    cmd = """
-        mkdir -p lazy_out
-        
-        $(location :M3LazyCoreInstanceGenerator) \\
-        lazy_out \\
-        /platform/pure/grammar/m3.pure
-        
-        cd lazy_out
-        zip -q -r ../$(OUTS) .
-    """,
-    tools = [":M3LazyCoreInstanceGenerator"],
+    out = "lazy_gen.srcjar",
+    args_list = ["/platform/pure/grammar/m3.pure"],
+    tool = ":M3LazyCoreInstanceGenerator",
 )
 
 # 5. Other Generator
 java_binary(
     name = "M3CoreInstanceGenerator",
     main_class = "org.finos.legend.pure.m3.generator.bootstrap.M3CoreInstanceGenerator",
-    runtime_deps = [":m3-core-base"],
     visibility = ["//visibility:public"],
+    runtime_deps = [
+        ":m3-core-base",
+        ":m3_core_resources",
+    ],
 )
 
-genrule(
+pure_generator(
     name = "other_gen",
     srcs = glob(["src/main/resources/**/*.pure"]),
-    outs = ["other_gen.srcjar"],
-    cmd = """
-        mkdir -p other_out
-        
-        $(location :M3CoreInstanceGenerator) \\
-        other_out/ \\
-        M3Platform \\
-        /platform/pure/grammar/milestoning.pure,/platform/pure/routing.pure,/platform/pure/anonymousCollections.pure,/platform/pure/relation.pure,/platform/pure/routing.pure,/platform/pure/variant/variant.pure,/platform/pure/essential/meta/graph/elementToPath.pure,/platform/pure/essential/lang/creation/dynamicNew.pure
-        
-        cd other_out
-        zip -q -r ../$(OUTS) .
-    """,
-    tools = [":M3CoreInstanceGenerator"],
+    out = "other_gen.srcjar",
+    args_list = [
+        "M3Platform",
+        "/platform/pure/grammar/milestoning.pure,/platform/pure/routing.pure,/platform/pure/anonymousCollections.pure,/platform/pure/relation.pure,/platform/pure/routing.pure,/platform/pure/variant/variant.pure,/platform/pure/essential/meta/graph/elementToPath.pure,/platform/pure/essential/lang/creation/dynamicNew.pure",
+    ],
+    tool = ":M3CoreInstanceGenerator",
 )
 
 # 6. PCT Generation
 java_binary(
     name = "FunctionsGeneration",
     main_class = "org.finos.legend.pure.m3.pct.functions.generation.FunctionsGeneration",
+    visibility = ["//visibility:public"],
     runtime_deps = [
         ":m3-core-base",
+        ":m3_core_resources",
         ":pure_platform_par_lib",
     ],
-    visibility = ["//visibility:public"],
 )
 
-genrule(
+pure_pct_report(
     name = "pct_reports",
     outs = [
         "pct-reports/FUNCTIONS_essential.json",
         "pct-reports/FUNCTIONS_grammar.json",
     ],
-    cmd = """
-        mkdir -p $(@D)/pct-reports
-        $(location :FunctionsGeneration) $(@D)/pct-reports org.finos.legend.pure.m3.PlatformCodeRepositoryProvider.essentialFunctions
-        $(location :FunctionsGeneration) $(@D)/pct-reports org.finos.legend.pure.m3.PlatformCodeRepositoryProvider.grammarFunctions
-    """,
-    tools = [":FunctionsGeneration"],
+    tool = ":FunctionsGeneration",
 )
 
 java_library(
     name = "pct_reports_lib",
-    resources = [":pct_reports"],
     resource_strip_prefix = "legend-pure/legend-pure-core/legend-pure-m3-core",
+    resources = [":pct_reports"],
     visibility = ["//visibility:public"],
 )
 
@@ -264,6 +164,10 @@ java_library(
         ":lazy_gen",
         ":other_gen",
     ],
+    javacopts = [
+        "-Xep:ComparableType:OFF",
+    ],
+    visibility = ["//visibility:public"],
     exports = [
         ":m3-core-base",
         ":pct_reports_lib",
@@ -272,14 +176,10 @@ java_library(
         ":m3-core-base",
         ":pct_reports_lib",
         "//legend-pure/legend-pure-core/legend-pure-m4",
-        "@maven//:org_eclipse_collections_eclipse_collections",
-        "@maven//:org_eclipse_collections_eclipse_collections_api",
-        "@maven//:org_antlr_antlr4_runtime",
+        "@legend_maven//:org_antlr_antlr4_runtime",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
     ],
-    javacopts = [
-        "-Xep:ComparableType:OFF",
-    ],
-    visibility = ["//visibility:public"],
 )
 
 java_library(
@@ -287,18 +187,18 @@ java_library(
     visibility = ["//visibility:public"],
     exports = [
         "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3:m3_kernel",
-        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/tools/locks:locks",
-        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/tools/test:test",
-        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/tools/kerberos:kerberos",
-        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/tools/tree:tree",
-        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/pct/aggregate/generation:generation",
-        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/pct/aggregate/model:model",
-        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/pct/functions/model:model",
-        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/pct/reports/model:model",
-        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/pct/shared/generation:generation",
-        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/pct/shared/provider:provider",
-        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/pct/shared/model:model",
-        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/tools/forkjoin:forkjoin"
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/pct/aggregate/generation",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/pct/aggregate/model",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/pct/functions/model",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/pct/reports/model",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/pct/shared/generation",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/pct/shared/model",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/pct/shared/provider",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/tools/forkjoin",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/tools/kerberos",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/tools/locks",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/tools/test",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/tools/tree",
     ],
 )
 
@@ -307,16 +207,155 @@ java_library(
     visibility = ["//visibility:public"],
     exports = [
         ":m3-core-base",
-        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/tools/test:test",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/tools/test",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/serialization/compiler/reference/v1:TestReferenceIdExtensionV1_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests:AbstractCompiledStateIntegrityTest_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests:AbstractPureTestWithCoreCompiled_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests:AbstractTestGeneralizationAtRuntime_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests:AbstractTestMeasure_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/elements/_class:AbstractTestConstraints_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/elements/_class:AbstractTestDispatchQualifiedProperties_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/elements/_enum:AbstractTestEnumeration_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/elements/function:AbstractTestReturn_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/elements/function:TestAdvancedOpenVariable_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/elements/property:AbstractTestDefaultValue_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function:AbstractTestFunctionDefinitionModify_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base:PureExpressionTest_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/_boolean:AbstractTestAnd_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/_boolean:AbstractTestNot_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/_boolean:AbstractTestOr_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/_boolean:AbstractTestPrecedence_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/asserts:AbstractTestAssert_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/collection:AbstractTestAt_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/collection:AbstractTestFirst_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/collection:AbstractTestGetAll_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/collection:AbstractTestInit_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/collection:AbstractTestIsEmpty_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/collection:AbstractTestLast_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/collection:AbstractTestMapCollection_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/collection:AbstractTestMapZeroOne_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/collection:AbstractTestMap_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/collection:AbstractTestRange_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/collection:AbstractTestReverse_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/collection:AbstractTestSlice_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/collection:AbstractTestTail_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/date:AbstractTestDayOfMonth_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/date:AbstractTestHour_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/date:AbstractTestMinute_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/date:AbstractTestNewDate_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/date:AbstractTestSecond_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/io:AbstractTestPrint_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/lang:AbstractTestCast_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/lang:AbstractTestCompare_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/lang:AbstractTestCopyAtRuntime_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/lang:AbstractTestDynamicNewConstraintsHandler_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/lang:AbstractTestDynamicNewConstraints_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/lang:AbstractTestDynamicNewGetterOverride_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/lang:AbstractTestDynamicNew_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/lang:AbstractTestEvaluateTypeManagement_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/lang:AbstractTestEvaluate_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/lang:AbstractTestMatch_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/lang:AbstractTestNewAtRuntime_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/lang:AbstractTestNewInferenceAtRuntime_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/lang:AbstractTestRawEvalProperty_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/math:AbstractTestArcCosine_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/math:AbstractTestArcSine_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/math:AbstractTestCeiling_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/math:AbstractTestDivide_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/math:AbstractTestFloor_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/math:AbstractTestPow_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/math:AbstractTestPrecedence_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/math:AbstractTestRem_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/math:AbstractTestRound_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/math:AbstractTestSqrt_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/math:AbstractTestTimes_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/meta:AbstractTestCanReactivateDynamically_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/meta:AbstractTestId_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/meta:AbstractTestInstanceOf_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/meta:AbstractTestNewEnumeration_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/meta:AbstractTestPathToElement_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/meta:AbstractTestReactivate_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/multiplicity:AbstractTestGetUpperBound_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/multiplicity:AbstractTestToMultiplicity_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/multiplicity:AbstractTestToOneMany_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/multiplicity:AbstractTestToOne_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/string:AbstractTestFormat_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/string:AbstractTestIndexOf_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/string:AbstractTestLength_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/string:AbstractTestParseBoolean_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/string:AbstractTestParseDate_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/string:AbstractTestParseFloat_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/string:AbstractTestParseInteger_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/string:AbstractTestSubstring_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/string:AbstractTestToString_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/function/base/string:AbstractTestTrim_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/incremental:AbstractTestIncrementalCompilation_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/incremental/_class:TestPureRuntimeClass_AsFunctionReturn_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/incremental/_class:TestPureRuntimeClass_AsPointer_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/incremental/_class:TestPureRuntimeClass_Constraints_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/incremental/_class:TestPureRuntimeClass_FunctionExpressionParam_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/incremental/_class:TestPureRuntimeClass_FunctionParamType_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/incremental/_class:TestPureRuntimeClass_InCast_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/incremental/_class:TestPureRuntimeClass_InCopy_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/incremental/_class:TestPureRuntimeClass_InGeneralization_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/incremental/_class:TestPureRuntimeClass_Property_UsedInAutoCollect_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/incremental/_package:TestPureRuntimePackage_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/incremental/association:TestPureRuntimeAssociation_AsPointer_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/incremental/association:TestPureRuntimeAssociation_UseProperty_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/incremental/association:TestPureRuntimeAssociation_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/incremental/function:TestPureRuntimeFunction_All_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/incremental/function:TestPureRuntimeFunction_Constraint_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/incremental/function:TestPureRuntimeFunction_Lambda_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/incremental/imports:TestPureRuntimeImport_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/incremental/milestoning:TestMilestoning_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/incremental/profile:TestPureRuntimeStereotype_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/incremental/profile:TestPureRuntimeTaggedValue_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/milestoning:AbstractTestMilestoning_lib",
     ],
+)
+
+# 7. PAR Generator
+java_binary(
+    name = "PureJarGenerator",
+    main_class = "org.finos.legend.pure.m3.generator.par.PureJarGenerator",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        ":m3-core-base",
+        ":m3_core_resources",
+        ":platform_properties_lib",
+    ],
+)
+
+pure_par(
+    name = "platform_par",
+    out = "pure-platform.par",
+    tool = ":PureJarGenerator",
+    repo_name = "platform",
+    visibility = ["//visibility:public"],
 )
 
 java_library(
     name = "pure_platform_par_lib",
+    resource_strip_prefix = "legend-pure/legend-pure-core/legend-pure-m3-core",
     resources = [
         ":bootstrap_gen",
         ":lazy_gen",
         ":other_gen",
+        ":platform_par",
     ],
     visibility = ["//visibility:public"],
+)
+
+java_library(
+    name = "m3_core_resources",
+    resource_strip_prefix = "legend-pure/legend-pure-core/legend-pure-m3-core/src/main/resources",
+    resources = glob(["src/main/resources/**"], exclude = ["src/main/resources/org/finos/legend/pure/platform.properties"]),
+    visibility = ["//visibility:public"],
+)
+
+genrule(
+    name = "inspect_par",
+    srcs = [":platform_par"],
+    outs = ["inspection.txt"],
+    cmd = "unzip -l $(location :platform_par) > $(OUTS)",
 )

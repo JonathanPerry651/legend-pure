@@ -18,10 +18,17 @@ import org.finos.legend.pure.m3.tests.AbstractPureTestWithCoreCompiled;
 import org.finos.legend.pure.m3.tests.RuntimeTestScriptBuilder;
 import org.finos.legend.pure.m3.tests.RuntimeVerifier;
 import org.junit.After;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-public abstract class AbstractPureRuntimeEnumerationTest extends AbstractPureTestWithCoreCompiled
+public class TestPureRuntimeEnumeration extends AbstractPureTestWithCoreCompiled
 {
+    @BeforeClass
+    public static void setUp()
+    {
+        setUpRuntime();
+    }
+
     @After
     public void cleanRuntime()
     {
