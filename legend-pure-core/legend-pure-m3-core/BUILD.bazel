@@ -148,6 +148,10 @@ pure_pct_report(
         "pct-reports/FUNCTIONS_grammar.json",
     ],
     tool = ":FunctionsGeneration",
+    report_classes = [
+        "org.finos.legend.pure.m3.PlatformCodeRepositoryProvider.essentialFunctions",
+        "org.finos.legend.pure.m3.PlatformCodeRepositoryProvider.grammarFunctions",
+    ],
 )
 
 java_library(

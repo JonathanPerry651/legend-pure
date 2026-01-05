@@ -422,20 +422,19 @@ java_binary(
     ],
 )
 
-genrule(
+load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_pct_report", "pure_java_code_gen")
+
+pure_pct_report(
     name = "generate_pct_reports",
     outs = [
         "pct-reports/ADAPTER_essential_compiled_Native.json",
         "pct-reports/ADAPTER_grammar_compiled_Native.json",
     ],
-    cmd = """
-        mkdir -p $(RULEDIR)/pct-reports && \\
-        $(location :PCTReportGenerator) \\
-            $(RULEDIR)/pct-reports/ \\
-            org.finos.legend.pure.runtime.java.compiled.pct.functions.Test_Compiled_GrammarFunctions_PCT \\
-            org.finos.legend.pure.runtime.java.compiled.pct.functions.Test_Compiled_EssentialFunctions_PCT
-    """,
-    tools = [":PCTReportGenerator"],
+    tool = ":PCTReportGenerator",
+    report_classes = [
+        "org.finos.legend.pure.runtime.java.compiled.pct.functions.Test_Compiled_GrammarFunctions_PCT",
+        "org.finos.legend.pure.runtime.java.compiled.pct.functions.Test_Compiled_EssentialFunctions_PCT",
+    ],
     visibility = ["//visibility:public"],
 )
 
@@ -483,46 +482,24 @@ java_library(
     ],
 )
 
-genrule(
-    name = "generate_platform_engine",
-    outs = [
-        "platform_metadata.jar",
-        "platform_src.srcjar",
+pure_java_code_gen(
+    name = "platform_src",
+    metadata_jar = "platform_metadata.jar",
+    repository = "platform",
+    tool = ":JavaCodeGeneration",
+    exclusions = [
+        "org/finos/legend/pure/generated/CoreGen.java",
+        "org/finos/legend/pure/generated/Root_meta_pure_functions_lang_KeyValue_Impl.java",
     ],
-    cmd = """
-        mkdir -p work_dir/classes
-        mkdir -p work_dir/target
-        
-        $(location :JavaCodeGeneration) \
-            platform \
-            work_dir/classes \
-            work_dir/target
-        
-        # Zip metadata (in classes directory)
-        cd work_dir/classes
-        zip -q -r ../../$(location platform_metadata.jar) metadata
-        cd ../..
-        
-        # Zip sources
-        # Zip sources
-        mkdir -p src_collection
-        if [ -d work_dir/target/generated-sources ]; then
-             cp -r work_dir/target/generated-sources/* src_collection/
-        fi
-        if [ -d work_dir/target/generated-test-sources ]; then
-             cp -r work_dir/target/generated-test-sources/* src_collection/
-        fi
-        
-        if [ -z "$$(ls -A src_collection)" ]; then
-             echo "No sources generated"
-             find work_dir
-             exit 1
-        fi
-        
-        cd src_collection
-        zip -q -r ../$(location platform_src.srcjar) . -x "org/finos/legend/pure/generated/CoreGen.java" -x "org/finos/legend/pure/generated/Root_meta_pure_functions_lang_KeyValue_Impl.java"
-    """,
-    tools = [":JavaCodeGeneration"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "generate_platform_engine",
+    srcs = [
+        ":platform_src",
+        ":platform_metadata.jar",
+    ],
     visibility = ["//visibility:public"],
 )
 

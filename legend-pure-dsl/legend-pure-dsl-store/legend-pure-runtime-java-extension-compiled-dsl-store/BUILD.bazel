@@ -46,7 +46,7 @@ java_binary(
     ],
 )
 
-load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_generator", "pure_jar_filter", "pure_java_code_gen")
+load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_generator", "pure_jar_filter", "pure_java_code_gen", "pure_jar_extract")
 
 pure_java_code_gen(
     name = "generate_store_sources",
@@ -57,26 +57,13 @@ pure_java_code_gen(
     tool = ":JavaCodeGeneration_Store",
 )
 
-genrule(
+pure_jar_extract(
     name = "extract_store_registry",
-    srcs = [":java_gen"],
-    outs = ["store_registry.srcjar"],
-    cmd = """
-        mkdir -p registry_out
-        cd registry_out
-        unzip -q ../$(location :java_gen)
-        
-        # Create a clean directory for registry
-        mkdir -p registry_clean/org/finos/legend/pure/generated
-        
-        # Copy Registry and CompImpls
-        cp org/finos/legend/pure/generated/StoreJavaModelFactoryRegistry.java registry_clean/org/finos/legend/pure/generated/
-        cp org/finos/legend/pure/generated/*_CompImpl.java registry_clean/org/finos/legend/pure/generated/
-        
-        # Zip
-        cd registry_clean
-        zip -q -r ../../$(location store_registry.srcjar) .
-    """,
+    src_jar = ":java_gen",
+    include_patterns = [
+        "org/finos/legend/pure/generated/StoreJavaModelFactoryRegistry.java",
+        "org/finos/legend/pure/generated/*_CompImpl.java",
+    ],
 )
 
 pure_generator(

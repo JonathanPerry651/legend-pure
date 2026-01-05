@@ -1,3 +1,6 @@
+load("//tools:zip_tree_artifacts.bzl", "zip_tree_artifacts")
+load("@rules_java//java:defs.bzl", "java_common")
+
 def _pure_antlr_gen_impl(ctx):
     # Create the antlr_flat output directory structure within bazel-out
     # We can't really "mkdir" in a rule in the same way, we define outputs.
@@ -147,55 +150,31 @@ def _pure_generator_impl(ctx):
     # Arguments
     args_list = ctx.attr.args_list
 
-    # Build command
-    # cmd = """
-    #     mkdir -p {tmp_dir}
-    #     {tool} {tmp_dir}/ {args}
-    #     cd {tmp_dir}
-    #     zip -q -r ../{output_jar} .
-    # """
+    # Output directory for the generator
+    gen_dir = ctx.actions.declare_directory(ctx.label.name + "_gen")
 
-    # We will use a unique temp directory for this action to avoid collisions if multiple run in parallel/same sandbox?
-    # Bazel sandboxing handles this, but "mkdir -p tmp" is safe enough if we name it uniquely or clean it up.
-    # We'll use the rule name as part of the directory.
-    tmp_dir = "gen_tmp_" + ctx.label.name
+    # Action 1: Run generator
+    # We'll use a wrapper shell if needed, but the generator usually takes a dir.
+    # Note: Generator needs to write to gen_dir.
+    gen_args = ctx.actions.args()
+    # Fix: Append / to ensure the generator treats it as a directory prefix correctly
+    gen_args.add(gen_dir.path + "/") 
+    gen_args.add_all(args_list)
 
-    args_str = " ".join(args_list)
-
-    cmd = """
-    set -e
-    mkdir -p {tmp_dir}
-    
-    # Generator typically takes output dir as first arg
-    {tool_path} {tmp_dir}/ {args_str}
-    
-    # Zip
-    # We need absolute path to output or handling the cd
-    # $(OUTS) in genrule is the output file path.
-    # output.path gives the path.
-    
-    curr_dir=$(pwd)
-    out_abs="$curr_dir/{output_path}"
-    
-    cd {tmp_dir}
-    zip -q -r "$out_abs" .
-    
-    # Cleanup?
-    cd ..
-    rm -rf {tmp_dir}
-    """.format(
-        tmp_dir = tmp_dir,
-        tool_path = tool.path,
-        args_str = args_str,
-        output_path = output.path,
+    ctx.actions.run(
+        outputs = [gen_dir],
+        inputs = srcs,
+        executable = tool,
+        arguments = [gen_args],
+        mnemonic = "PureGeneratorRun",
     )
 
-    ctx.actions.run_shell(
-        inputs = srcs,
-        outputs = [output],
-        tools = [tool],
-        command = cmd,
-        mnemonic = "PureGenerator",
+    # Action 2: Zip with zipper
+    zip_tree_artifacts(
+        ctx,
+        output = output,
+        inputs = [gen_dir],
+        java_runtime_target = ctx.attr._jdk,
     )
 
     return [DefaultInfo(files = depset([output]))]
@@ -207,6 +186,10 @@ pure_generator = rule(
         "tool": attr.label(mandatory = True, executable = True, cfg = "exec"),
         "args_list": attr.string_list(),
         "out": attr.output(mandatory = True),
+        "_jdk": attr.label(
+            default = Label("@bazel_tools//tools/jdk:current_java_runtime"),
+            providers = [java_common.JavaRuntimeInfo],
+        ),
     },
 )
 
@@ -272,32 +255,24 @@ pure_par = rule(
 )
 
 def _pure_report_impl(ctx):
-    # cmd = """
-    #     mkdir -p $(@D)/pct-reports
-    #     $(location :FunctionsGeneration) $(@D)/pct-reports org.finos.legend.pure.m3.PlatformCodeRepositoryProvider.essentialFunctions
-    #     $(location :FunctionsGeneration) $(@D)/pct-reports org.finos.legend.pure.m3.PlatformCodeRepositoryProvider.grammarFunctions
-    # """
-
     tool = ctx.executable.tool
     outputs = ctx.outputs.outs
+    report_classes = ctx.attr.report_classes
 
-    # We need the directory that contains the outputs.
-    # Bazel rules generally should output specific files.
-    # We can ask the tool to output to a specific dir.
-
-    # We'll use the dirname of the first output.
+    # Determine output directory from the first output
+    # All outputs must be in the same directory for this tool logic
     output_dir = outputs[0].dirname
 
-    cmd = """
-    set -e
-    mkdir -p {output_dir}
+    cmd_lines = ["set -e", "mkdir -p {output_dir}".format(output_dir = output_dir)]
     
-    {tool_path} {output_dir} org.finos.legend.pure.m3.PlatformCodeRepositoryProvider.essentialFunctions
-    {tool_path} {output_dir} org.finos.legend.pure.m3.PlatformCodeRepositoryProvider.grammarFunctions
-    """.format(
-        tool_path = tool.path,
-        output_dir = output_dir,
-    )
+    for cls in report_classes:
+        cmd_lines.append("{tool_path} {output_dir} {cls}".format(
+            tool_path = tool.path,
+            output_dir = output_dir,
+            cls = cls
+        ))
+    
+    cmd = "\n".join(cmd_lines)
 
     ctx.actions.run_shell(
         inputs = [],
@@ -314,6 +289,7 @@ pure_pct_report = rule(
     attrs = {
         "tool": attr.label(mandatory = True, executable = True, cfg = "exec"),
         "outs": attr.output_list(mandatory = True),
+        "report_classes": attr.string_list(mandatory = True),
     },
 )
 
@@ -322,57 +298,115 @@ def _pure_java_code_gen_impl(ctx):
     out_srcjar = ctx.outputs.srcjar
     repo_name = ctx.attr.repository
     srcs = ctx.files.srcs
+    exclusions = ctx.attr.exclusions
     
-    # Needs a temp dir for generation
-    # Structure:
-    #   work_dir/classes
-    #   work_dir/target
-    
-    cmd = """
-        set -e
-        echo "DEBUG: Current Dir: $(pwd)" > debug_structure.txt
-        find . -maxdepth 4 >> debug_structure.txt
-        mkdir -p work_dir/classes
-        mkdir -p work_dir/target
-        
-        {tool_path} {repo_name} work_dir/classes work_dir/target > tool_output.txt 2>&1
-        
-        # Zip sources
-        mkdir -p src_collection
-        cp debug_structure.txt src_collection/
-        cp tool_output.txt src_collection/
-        if [ -n "$(ls -A work_dir/target/generated-sources 2>/dev/null)" ]; then
-             cp -r work_dir/target/generated-sources/* src_collection/
-        fi
-        if [ -n "$(ls -A work_dir/target/generated-test-sources 2>/dev/null)" ]; then
-             cp -r work_dir/target/generated-test-sources/* src_collection/
-        fi
-        
-        # Ensure we have content
-        if [ -z "$(find src_collection -type f)" ]; then
-             echo "No generated sources found for {repo_name}"
-             exit 1
-        fi
+    # Output directories for the generator
+    classes_dir = ctx.actions.declare_directory(ctx.label.name + "_classes")
+    target_dir = ctx.actions.declare_directory(ctx.label.name + "_target")
 
-        cd src_collection
-        zip -q -r ../{out_path} .
-        cd ..
-        rm -rf work_dir src_collection
-    """.format(
-        tool_path = tool.path,
-        repo_name = repo_name,
-        out_path = out_srcjar.path,
+    # Action 1: Run generator
+    # Generator takes: <repo> <classesDir> <targetDir>
+    gen_args = ctx.actions.args()
+    gen_args.add(repo_name)
+    gen_args.add(classes_dir.path)
+    gen_args.add(target_dir.path)
+
+    tool_output = ctx.actions.declare_file(ctx.label.name + "_tool_output.txt")
+
+    ctx.actions.run_shell(
+        outputs = [classes_dir, target_dir, tool_output],
+        inputs = srcs,
+        tools = [tool],
+        command = "{tool_path} $1 $2 $3 > {out} 2>&1".format(
+            tool_path = tool.path,
+            out = tool_output.path,
+        ),
+        arguments = [gen_args],
+        mnemonic = "PureJavaCodeGenRun",
     )
+    
+    # Handling Metadata (Optional)
+    outputs = [out_srcjar]
+    if ctx.outputs.metadata_jar:
+        # We need to extract metadata from classes_dir/metadata and zip it
+        # We'll create a new directory solely for metadata to zip
+        metadata_zip_dir = ctx.actions.declare_directory(ctx.label.name + "_metadata_zip_root")
+        
+        ctx.actions.run_shell(
+             inputs = [classes_dir],
+             outputs = [metadata_zip_dir],
+             command = """
+                 mkdir -p {meta_root}
+                 if [ -d "{classes}/metadata" ]; then
+                     cp -r "{classes}/metadata" {meta_root}/
+                 fi
+             """.format(
+                 meta_root = metadata_zip_dir.path,
+                 classes = classes_dir.path,
+             ),
+             mnemonic = "PureJavaCodeGenMeta",
+        )
+        
+        zip_tree_artifacts(
+            ctx,
+            output = ctx.outputs.metadata_jar,
+            inputs = [metadata_zip_dir],
+            java_runtime_target = ctx.attr._jdk,
+        )
+        outputs.append(ctx.outputs.metadata_jar)
+
+    # Action 2: Merge for zipping
+    merged_dir = ctx.actions.declare_directory(ctx.label.name + "_merged")
+    
+    # Construct exclusion commands
+    rm_cmds = []
+    for excl in exclusions:
+         rm_cmds.append("rm -rf \"{merged}/{excl}\"".format(merged = merged_dir.path, excl = excl))
+    cleanup_script = "\n".join(rm_cmds)
+
+    merge_args = ctx.actions.args()
+    merge_args.add(target_dir.path)
+    merge_args.add(tool_output.path)
+    merge_args.add(merged_dir.path)
     
     ctx.actions.run_shell(
-        inputs = srcs,
-        outputs = [out_srcjar],
-        tools = [ctx.attr.tool[DefaultInfo].files_to_run],
-        command = cmd,
-        mnemonic = "PureJavaCodeGen",
+         inputs = [target_dir, tool_output],
+         outputs = [merged_dir],
+         arguments = [merge_args],
+         command = """
+             set -e
+             src_dir="$1"
+             tool_out="$2"
+             dest_dir="$3"
+             
+             # Copy tool output
+             cp "$tool_out" "$dest_dir/"
+             
+             # Merge generated sources
+             # We use cp -r src/. dest/ to merge contents
+             if [ -d "$src_dir/generated-sources" ]; then
+                 cp -r "$src_dir/generated-sources"/. "$dest_dir/"
+             fi
+             
+             if [ -d "$src_dir/generated-test-sources" ]; then
+                 cp -r "$src_dir/generated-test-sources"/. "$dest_dir/"
+             fi
+             
+             # Apply exclusions
+             {cleanup}
+         """.format(cleanup = cleanup_script),
+         mnemonic = "PureJavaCodeGenMerge",
+    )
+
+    # Action 3: Zip with zipper
+    zip_tree_artifacts(
+        ctx,
+        output = out_srcjar,
+        inputs = [merged_dir],
+        java_runtime_target = ctx.attr._jdk,
     )
     
-    return [DefaultInfo(files = depset([out_srcjar]))]
+    return [DefaultInfo(files = depset(outputs))]
 
 pure_java_code_gen = rule(
     implementation = _pure_java_code_gen_impl,
@@ -380,6 +414,12 @@ pure_java_code_gen = rule(
         "tool": attr.label(mandatory = True, executable = True, cfg = "exec"),
         "srcs": attr.label_list(allow_files = True),
         "repository": attr.string(mandatory = True),
+        "exclusions": attr.string_list(default = []),
+        "metadata_jar": attr.output(),
+        "_jdk": attr.label(
+            default = Label("@bazel_tools//tools/jdk:current_java_runtime"),
+            providers = [java_common.JavaRuntimeInfo],
+        ),
     },
     outputs = {
         "srcjar": "%{name}.srcjar",
@@ -397,28 +437,51 @@ def _pure_jar_filter_impl(ctx):
         rm_cmds.append("rm -rf " + p)
     rm_script = "\n".join(rm_cmds)
     
-    cmd = """
-        set -e
-        mkdir -p filtered_work
-        cd filtered_work
-        unzip -q -o ../{src_jar_path}
-        
-        {rm_script}
-        
-        zip -q -r ../{out_jar_path} .
-        cd ..
-        rm -rf filtered_work
-    """.format(
-        src_jar_path = src_jar.path,
-        out_jar_path = out_jar.path,
-        rm_script = rm_script,
-    )
-    
+    # Discovery of jar tool for extraction
+    jar_tool = None
+    for f in ctx.attr._jar[java_common.JavaRuntimeInfo].files.to_list():
+        if f.basename == "jar":
+            jar_tool = f
+            break
+    if not jar_tool:
+        fail("jar tool not found in java_runtime")
+
+    # Output directory for the filtered content
+    filtered_dir = ctx.actions.declare_directory(ctx.label.name + "_filtered")
+
+    args = ctx.actions.args()
+    args.add(jar_tool)
+    args.add(src_jar)
+    args.add(filtered_dir.path)
+
     ctx.actions.run_shell(
         inputs = [src_jar],
-        outputs = [out_jar],
-        command = cmd,
-        mnemonic = "PureJarFilter",
+        outputs = [filtered_dir],
+        tools = [jar_tool],
+        arguments = [args],
+        command = """
+            set -e
+            jar_tool="$1"
+            src="$2"
+            dest="$3"
+            
+            src_abs="$(pwd)/$src"
+            
+            cd "$dest"
+            "$jar_tool" xf "$src_abs"
+            {rm_script}
+            
+            # Verification: Check if empty? zip_tree_artifacts handles empty dirs by producing empty zip or we might want to fail?
+            # pure_jar_filter usually expects content.
+        """.format(rm_script = rm_script),
+        mnemonic = "PureJarFilterExtract",
+    )
+    
+    zip_tree_artifacts(
+        ctx,
+        output = out_jar,
+        inputs = [filtered_dir],
+        java_runtime_target = ctx.attr._jdk,
     )
     
     return [DefaultInfo(files = depset([out_jar]))]
@@ -428,9 +491,17 @@ pure_jar_filter = rule(
     attrs = {
         "src_jar": attr.label(mandatory = True, allow_single_file = True),
         "filter_paths": attr.string_list(mandatory = True),
+        "_jdk": attr.label(
+            default = Label("@bazel_tools//tools/jdk:current_java_runtime"),
+            providers = [java_common.JavaRuntimeInfo],
+        ),
+        "_jar": attr.label(
+            default = Label("@bazel_tools//tools/jdk:current_java_runtime"),
+            providers = [java_common.JavaRuntimeInfo],
+        ),
     },
     outputs = {
-        "jar": "%{name}.srcjar", # Usually outputting a source jar
+        "jar": "%{name}.srcjar",
     },
 )
 
@@ -454,4 +525,101 @@ pure_resource_copy = rule(
         "src": attr.label(mandatory = True, allow_single_file = True),
         "out": attr.output(mandatory = True),
     },
+)
+
+def _pure_jar_extract_impl(ctx):
+    src_jar = ctx.file.src_jar
+    out_jar = ctx.outputs.jar
+    # Patterns to keep
+    include_patterns = ctx.attr.include_patterns
+    
+    # Discovery of jar tool for extraction
+    jar_tool = None
+    for f in ctx.attr._jar[java_common.JavaRuntimeInfo].files.to_list():
+        if f.basename == "jar":
+            jar_tool = f
+            break
+    if not jar_tool:
+        fail("jar tool not found in java_runtime")
+
+    extract_dir = ctx.actions.declare_directory(ctx.label.name + "_extracted")
+    filtered_dir = ctx.actions.declare_directory(ctx.label.name + "_filtered")
+    
+    # Script to extract and filter
+    script = """
+import os
+import sys
+import fnmatch
+import shutil
+import subprocess
+
+src_jar = sys.argv[1]
+extract_root = sys.argv[2]
+filtered_root = sys.argv[3]
+jar_tool = sys.argv[4]
+patterns = sys.argv[5:]
+
+# 1. Extract
+os.makedirs(extract_root, exist_ok=True)
+# We use absolute path for jar and tool to be safe when cwd changes
+src_jar = os.path.abspath(src_jar)
+jar_tool = os.path.abspath(jar_tool)
+
+subprocess.check_call([jar_tool, "xf", src_jar], cwd=extract_root)
+
+# 2. Filter
+os.makedirs(filtered_root, exist_ok=True)
+
+# Walk and match
+for root, dirs, files in os.walk(extract_root):
+    for f in files:
+        full_path = os.path.join(root, f)
+        rel_path = os.path.relpath(full_path, extract_root)
+        
+        keep = False
+        for p in patterns:
+            # Match against the relative path
+            if fnmatch.fnmatch(rel_path, p):
+                keep = True
+                break
+        
+        if keep:
+            dest_path = os.path.join(filtered_root, rel_path)
+            os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+            shutil.copy2(full_path, dest_path)
+"""
+
+    # Write script to file
+    script_file = ctx.actions.declare_file(ctx.label.name + "_filter.py")
+    ctx.actions.write(script_file, script)
+
+    ctx.actions.run(
+        inputs = [src_jar, script_file],
+        outputs = [extract_dir, filtered_dir],
+        tools = [jar_tool],
+        executable = "python3",
+        arguments = [script_file.path, src_jar.path, extract_dir.path, filtered_dir.path, jar_tool.path] + include_patterns,
+        mnemonic = "PureJarExtract",
+        use_default_shell_env = True,
+    )
+    
+    # 3. Zip
+    zip_tree_artifacts(
+        ctx,
+        output = out_jar,
+        inputs = [filtered_dir],
+        java_runtime_target = ctx.attr._jdk,
+    )
+    
+    return [DefaultInfo(files = depset([out_jar]))]
+
+pure_jar_extract = rule(
+    implementation = _pure_jar_extract_impl,
+    attrs = {
+        "src_jar": attr.label(mandatory = True, allow_single_file = True),
+        "include_patterns": attr.string_list(mandatory = True),
+        "_jdk": attr.label(default = Label("@bazel_tools//tools/jdk:current_java_runtime"), providers = [java_common.JavaRuntimeInfo]),
+        "_jar": attr.label(default = Label("@bazel_tools//tools/jdk:current_java_runtime"), providers = [java_common.JavaRuntimeInfo]),
+    },
+    outputs = {"jar": "%{name}.srcjar"},
 )

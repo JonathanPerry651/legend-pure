@@ -1,3 +1,6 @@
+load("@rules_java//java:defs.bzl", "java_binary", "java_common")
+load("//tools:zip_tree_artifacts.bzl", "zip_tree_artifacts")
+
 def _get_package_name(file):
     # Calculates package name based on path relative to src/main/antlr4
     path = file.short_path
@@ -18,8 +21,6 @@ def _get_output_dir_path(file):
 def _antlr_gen_impl(ctx):
     srcs = ctx.files.srcs
     tool = ctx.executable.tool
-    java_runtime = ctx.toolchains["@bazel_tools//tools/jdk:toolchain_type"].java.java_runtime
-    jar_tool = java_runtime.java_home + "/bin/jar"
     
     # 1. Create Lib Dir components using symlinks
     lib_files = []
@@ -55,29 +56,33 @@ def _antlr_gen_impl(ctx):
         out_dir = ctx.actions.declare_directory(ctx.label.name + "_lexer_out_" + lexer.basename)
         all_gen_dirs.append(out_dir)
         
-        args = ctx.actions.args()
-        args.add("-package", package)
-        args.add("-visitor")
-        args.add("-listener")
-        # Point -lib to the directory containing symlinked grammars
-        args.add("-lib", lib_files[0].dirname)
-        args.add("-o", out_dir.path + "/" + rel_dir)
-        # Input file is the symlink
-        # For the input file, it is in lib_files[0] directory.
-        # We can construct path: lib_files[0].dirname + "/" + lexer.basename
-        # Or just use the artifact if we found it in lib_files?
-        # But lib_files contains symlinks with correct names.
-        # We should find the specific artifact in lib_files that corresponds to lexer.
-        # However, for simplicity, using path format is easier.
-        args.add(lib_files[0].dirname + "/" + lexer.basename)
-
-        ctx.actions.run(
+        ctx.actions.run_shell(
             outputs = [out_dir],
-            inputs = lib_files,
-            executable = tool,
-            arguments = [args],
+            inputs = lib_files + [lexer],
+            tools = [tool],
+            command = """
+                set -e
+                tool_abs="$(pwd)/$1"
+                out_root_abs="$(pwd)/$2"
+                rel_dir="$3"
+                grammar_dir="$4"
+                grammar_base="$5"
+                package="$6"
+                
+                out_dir_abs="$out_root_abs/$rel_dir"
+                mkdir -p "$out_dir_abs"
+                
+                cd "$grammar_dir"
+                "$tool_abs" -o "$out_dir_abs" -package "$package" -visitor -listener -lib . "$grammar_base"
+                
+                if [ -z "$(find "$out_root_abs" -type f)" ]; then
+                    echo "ERROR: ANTLR Lexer produced no files in $out_root_abs"
+                    exit 1
+                fi
+            """,
+            arguments = [tool.path, out_dir.path, rel_dir, lib_files[0].dirname, lexer.basename, package],
             mnemonic = "AntlrLexer",
-            progress_message = "Compiling Lexer " + lexer.basename,
+            progress_message = "Generating ANTLR lexer for %s" % lexer.short_path,
         )
         
         generated_tokens.append(out_dir)
@@ -85,25 +90,22 @@ def _antlr_gen_impl(ctx):
     # 3. Update Lib with Tokens (Phase 2)
     lib_phase2_dir = ctx.actions.declare_directory(ctx.label.name + "_lib_phase2")
     
-    phase2_args = ctx.actions.args()
-    phase2_args.add(lib_files[0].dirname)   # Source of .g4 symlinks
-    phase2_args.add(lib_phase2_dir.path)    # Dest dir
-    phase2_args.add_all(generated_tokens)   # Dirs containing .tokens
-    
     ctx.actions.run_shell(
         inputs = lib_files + generated_tokens,
         outputs = [lib_phase2_dir],
-        arguments = [phase2_args],
         command = """
-            src_lib_dir="$1"
-            dest_lib="$2"
+            set -e
+            dest_lib="$1"
+            src_lib_dir="$2"
             shift 2
+            
             mkdir -p "$dest_lib"
             cp "$src_lib_dir"/*.g4 "$dest_lib"/
             for token_dir in "$@"; do
                 find "$token_dir" -name '*.tokens' -exec cp {} "$dest_lib"/ \\;
             done
         """,
+        arguments = [lib_phase2_dir.path, lib_files[0].dirname] + [d.path for d in generated_tokens],
         mnemonic = "SetupAntlrLibPhase2",
     )
 
@@ -115,64 +117,44 @@ def _antlr_gen_impl(ctx):
         out_dir = ctx.actions.declare_directory(ctx.label.name + "_parser_out_" + parser.basename)
         all_gen_dirs.append(out_dir)
 
-        args = ctx.actions.args()
-        args.add("-package", package)
-        args.add("-visitor")
-        args.add("-listener")
-        # Point -lib to the directory containing tokens and grammars
-        args.add("-lib", lib_phase2_dir.path)
-        args.add("-o", out_dir.path + "/" + rel_dir)
-        # Input file is in the phase2 dir
-        args.add(lib_phase2_dir.path + "/" + parser.basename)
-
-        ctx.actions.run(
+        ctx.actions.run_shell(
             outputs = [out_dir],
             inputs = [lib_phase2_dir],
-            executable = tool,
-            arguments = [args],
+            tools = [tool],
+            command = """
+                set -e
+                tool_abs="$(pwd)/$1"
+                out_root_abs="$(pwd)/$2"
+                rel_dir="$3"
+                lib_phase2_abs="$(pwd)/$4"
+                grammar_dir="$5"
+                grammar_base="$6"
+                package="$7"
+                
+                out_dir_abs="$out_root_abs/$rel_dir"
+                mkdir -p "$out_dir_abs"
+                
+                cd "$grammar_dir"
+                "$tool_abs" -o "$out_dir_abs" -package "$package" -visitor -listener -lib "$lib_phase2_abs" "$grammar_base"
+                
+                if [ -z "$(find "$out_root_abs" -type f)" ]; then
+                    echo "ERROR: ANTLR Parser produced no files in $out_root_abs"
+                    exit 1
+                fi
+            """,
+            arguments = [tool.path, out_dir.path, rel_dir, lib_phase2_dir.path, lib_phase2_dir.path, parser.basename, package],
             mnemonic = "AntlrParser",
-            progress_message = "Compiling Parser " + parser.basename,
+            progress_message = "Generating ANTLR parser for %s" % parser.short_path,
         )
 
     # 5. Package results
     out_srcjar = ctx.outputs.srcjar
     
-    # Using the local jar tool from java runtime
-    # We need to construct the logic carefully. We have a set of directories.
-    # The 'jar' tool expects -C <dir> calls.
-    
-    # We will append loops to copy files to tmp_srcjar
-    # Using ctx.actions.args to pass directory list
-    
-    package_args = ctx.actions.args()
-    package_args.add(out_srcjar)
-    package_args.add_all(all_gen_dirs, expand_directories = False)
-    
-    ctx.actions.run_shell(
+    zip_tree_artifacts(
+        ctx,
+        output = out_srcjar,
         inputs = all_gen_dirs,
-        outputs = [out_srcjar],
-        tools = java_runtime.files, # Access to the JDK files
-        arguments = [package_args],
-        command = """
-            jar_out="$1"
-            shift
-            merged_dir=$(mktemp -d)
-            
-            for d in "$@"; do
-                if [ -d "$d" ]; then
-                     cp -r "$d"/* "$merged_dir"/
-                elif [ -f "$d" ]; then
-                     cp "$d" "$merged_dir"/
-                fi
-            done
-            
-            # Use the jar tool from the JDK
-            "{jar_tool}" cf "$jar_out" -C "$merged_dir" .
-            rm -rf "$merged_dir"
-        """.format(
-            jar_tool = jar_tool
-        ),
-        mnemonic = "PackageAntlrSrcjar",
+        java_runtime_target = ctx.attr._jdk,
     )
     
     return [DefaultInfo(files = depset([out_srcjar]))]
@@ -182,9 +164,12 @@ antlr_gen = rule(
     attrs = {
         "srcs": attr.label_list(allow_files = [".g4"]),
         "tool": attr.label(executable = True, cfg = "exec", mandatory = True),
+        "_jdk": attr.label(
+            default = Label("@bazel_tools//tools/jdk:current_java_runtime"),
+            providers = [java_common.JavaRuntimeInfo],
+        ),
     },
     outputs = {
         "srcjar": "%{name}.srcjar",
     },
-    toolchains = ["@bazel_tools//tools/jdk:toolchain_type"],
 )
