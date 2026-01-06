@@ -1,6 +1,6 @@
 load("@rules_java//java:defs.bzl", "java_library", "java_test")
-
 load("//legend-pure:grammar.bzl", "antlr_gen")
+load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_resource_copy")
 
 antlr_gen(
     name = "antlr_gen",
@@ -8,8 +8,6 @@ antlr_gen(
     tool = "//legend-pure:antlr4_tool",
     visibility = ["//visibility:private"],
 )
-
-load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_resource_copy")
 
 pure_resource_copy(
     name = "antlr_resources",

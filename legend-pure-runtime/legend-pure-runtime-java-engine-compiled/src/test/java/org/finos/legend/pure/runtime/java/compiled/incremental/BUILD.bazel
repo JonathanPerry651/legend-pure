@@ -97,9 +97,9 @@ java_library(
     deps = [
         "//legend-pure/legend-pure-core/legend-pure-m3-core",
         "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/incremental:TestMultipleRepoIncrementalCompilation_lib",
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:compiled_engine_boot",
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:platform_metadata",
-        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests/incremental:TestMultipleRepoIncrementalCompilation_lib",
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:CompiledClassloaderStateVerifier_lib",
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:CompiledMetadataStateVerifier_lib",
         "@legend_maven//:junit_junit",

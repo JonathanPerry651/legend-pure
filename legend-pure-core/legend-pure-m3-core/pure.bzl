@@ -1,5 +1,5 @@
-load("//tools:zip_tree_artifacts.bzl", "zip_tree_artifacts")
 load("@rules_java//java:defs.bzl", "java_common")
+load("//tools:zip_tree_artifacts.bzl", "zip_tree_artifacts")
 
 def _pure_antlr_gen_impl(ctx):
     # Create the antlr_flat output directory structure within bazel-out
@@ -157,8 +157,9 @@ def _pure_generator_impl(ctx):
     # We'll use a wrapper shell if needed, but the generator usually takes a dir.
     # Note: Generator needs to write to gen_dir.
     gen_args = ctx.actions.args()
+
     # Fix: Append / to ensure the generator treats it as a directory prefix correctly
-    gen_args.add(gen_dir.path + "/") 
+    gen_args.add(gen_dir.path + "/")
     gen_args.add_all(args_list)
 
     ctx.actions.run(
@@ -210,7 +211,7 @@ def _pure_par_impl(ctx):
 
     # Since our rule declares the output file explicitly, we should tell the generator
     # to generate it there, or generate to a temp dir and move it.
-    
+
     # We construct the expected generated filename based on repo_name
     expected_par_name = "pure-{}.par".format(repo_name)
 
@@ -264,14 +265,14 @@ def _pure_report_impl(ctx):
     output_dir = outputs[0].dirname
 
     cmd_lines = ["set -e", "mkdir -p {output_dir}".format(output_dir = output_dir)]
-    
+
     for cls in report_classes:
         cmd_lines.append("{tool_path} {output_dir} {cls}".format(
             tool_path = tool.path,
             output_dir = output_dir,
-            cls = cls
+            cls = cls,
         ))
-    
+
     cmd = "\n".join(cmd_lines)
 
     ctx.actions.run_shell(
@@ -299,7 +300,7 @@ def _pure_java_code_gen_impl(ctx):
     repo_name = ctx.attr.repository
     srcs = ctx.files.srcs
     exclusions = ctx.attr.exclusions
-    
+
     # Output directories for the generator
     classes_dir = ctx.actions.declare_directory(ctx.label.name + "_classes")
     target_dir = ctx.actions.declare_directory(ctx.label.name + "_target")
@@ -324,29 +325,29 @@ def _pure_java_code_gen_impl(ctx):
         arguments = [gen_args],
         mnemonic = "PureJavaCodeGenRun",
     )
-    
+
     # Handling Metadata (Optional)
     outputs = [out_srcjar]
     if ctx.outputs.metadata_jar:
         # We need to extract metadata from classes_dir/metadata and zip it
         # We'll create a new directory solely for metadata to zip
         metadata_zip_dir = ctx.actions.declare_directory(ctx.label.name + "_metadata_zip_root")
-        
+
         ctx.actions.run_shell(
-             inputs = [classes_dir],
-             outputs = [metadata_zip_dir],
-             command = """
+            inputs = [classes_dir],
+            outputs = [metadata_zip_dir],
+            command = """
                  mkdir -p {meta_root}
                  if [ -d "{classes}/metadata" ]; then
                      cp -r "{classes}/metadata" {meta_root}/
                  fi
              """.format(
-                 meta_root = metadata_zip_dir.path,
-                 classes = classes_dir.path,
-             ),
-             mnemonic = "PureJavaCodeGenMeta",
+                meta_root = metadata_zip_dir.path,
+                classes = classes_dir.path,
+            ),
+            mnemonic = "PureJavaCodeGenMeta",
         )
-        
+
         zip_tree_artifacts(
             ctx,
             output = ctx.outputs.metadata_jar,
@@ -357,23 +358,23 @@ def _pure_java_code_gen_impl(ctx):
 
     # Action 2: Merge for zipping
     merged_dir = ctx.actions.declare_directory(ctx.label.name + "_merged")
-    
+
     # Construct exclusion commands
     rm_cmds = []
     for excl in exclusions:
-         rm_cmds.append("rm -rf \"{merged}/{excl}\"".format(merged = merged_dir.path, excl = excl))
+        rm_cmds.append("rm -rf \"{merged}/{excl}\"".format(merged = merged_dir.path, excl = excl))
     cleanup_script = "\n".join(rm_cmds)
 
     merge_args = ctx.actions.args()
     merge_args.add(target_dir.path)
     merge_args.add(tool_output.path)
     merge_args.add(merged_dir.path)
-    
+
     ctx.actions.run_shell(
-         inputs = [target_dir, tool_output],
-         outputs = [merged_dir],
-         arguments = [merge_args],
-         command = """
+        inputs = [target_dir, tool_output],
+        outputs = [merged_dir],
+        arguments = [merge_args],
+        command = """
              set -e
              src_dir="$1"
              tool_out="$2"
@@ -395,7 +396,7 @@ def _pure_java_code_gen_impl(ctx):
              # Apply exclusions
              {cleanup}
          """.format(cleanup = cleanup_script),
-         mnemonic = "PureJavaCodeGenMerge",
+        mnemonic = "PureJavaCodeGenMerge",
     )
 
     # Action 3: Zip with zipper
@@ -405,7 +406,7 @@ def _pure_java_code_gen_impl(ctx):
         inputs = [merged_dir],
         java_runtime_target = ctx.attr._jdk,
     )
-    
+
     return [DefaultInfo(files = depset(outputs))]
 
 pure_java_code_gen = rule(
@@ -430,13 +431,13 @@ def _pure_jar_filter_impl(ctx):
     src_jar = ctx.file.src_jar
     out_jar = ctx.outputs.jar
     filter_paths = ctx.attr.filter_paths
-    
+
     # Construct rm command
     rm_cmds = []
     for p in filter_paths:
         rm_cmds.append("rm -rf " + p)
     rm_script = "\n".join(rm_cmds)
-    
+
     # Discovery of jar tool for extraction
     jar_tool = None
     for f in ctx.attr._jar[java_common.JavaRuntimeInfo].files.to_list():
@@ -476,14 +477,14 @@ def _pure_jar_filter_impl(ctx):
         """.format(rm_script = rm_script),
         mnemonic = "PureJarFilterExtract",
     )
-    
+
     zip_tree_artifacts(
         ctx,
         output = out_jar,
         inputs = [filtered_dir],
         java_runtime_target = ctx.attr._jdk,
     )
-    
+
     return [DefaultInfo(files = depset([out_jar]))]
 
 pure_jar_filter = rule(
@@ -508,7 +509,7 @@ pure_jar_filter = rule(
 def _pure_resource_copy_impl(ctx):
     src = ctx.file.src
     output = ctx.outputs.out
-    
+
     # Just a simple copy
     ctx.actions.run_shell(
         inputs = [src],
@@ -516,7 +517,7 @@ def _pure_resource_copy_impl(ctx):
         command = "cp \"{src}\" \"{out}\"".format(src = src.path, out = output.path),
         mnemonic = "PureResourceCopy",
     )
-    
+
     return [DefaultInfo(files = depset([output]))]
 
 pure_resource_copy = rule(
@@ -530,9 +531,10 @@ pure_resource_copy = rule(
 def _pure_jar_extract_impl(ctx):
     src_jar = ctx.file.src_jar
     out_jar = ctx.outputs.jar
+
     # Patterns to keep
     include_patterns = ctx.attr.include_patterns
-    
+
     # Discovery of jar tool for extraction
     jar_tool = None
     for f in ctx.attr._jar[java_common.JavaRuntimeInfo].files.to_list():
@@ -544,7 +546,7 @@ def _pure_jar_extract_impl(ctx):
 
     extract_dir = ctx.actions.declare_directory(ctx.label.name + "_extracted")
     filtered_dir = ctx.actions.declare_directory(ctx.label.name + "_filtered")
-    
+
     # Script to extract and filter
     script = """
 import os
@@ -602,7 +604,7 @@ for root, dirs, files in os.walk(extract_root):
         mnemonic = "PureJarExtract",
         use_default_shell_env = True,
     )
-    
+
     # 3. Zip
     zip_tree_artifacts(
         ctx,
@@ -610,7 +612,7 @@ for root, dirs, files in os.walk(extract_root):
         inputs = [filtered_dir],
         java_runtime_target = ctx.attr._jdk,
     )
-    
+
     return [DefaultInfo(files = depset([out_jar]))]
 
 pure_jar_extract = rule(

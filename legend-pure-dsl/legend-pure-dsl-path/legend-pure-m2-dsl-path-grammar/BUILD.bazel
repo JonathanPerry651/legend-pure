@@ -1,9 +1,7 @@
 load("@rules_java//java:defs.bzl", "java_library")
-
 load("@rules_java//java:java_test.bzl", "java_test")
-load("//legend-pure:pure_test.bzl", "pure_test")
-
 load("//legend-pure:grammar.bzl", "antlr_gen")
+load("//legend-pure:pure_test.bzl", "pure_test")
 
 antlr_gen(
     name = "antlr_gen",
@@ -31,7 +29,10 @@ java_library(
 
 java_library(
     name = "test_utils",
-    srcs = glob(["src/test/java/**/*.java"], exclude = ["src/test/java/org/finos/legend/pure/m2/inlinedsl/path/incremental/TestPureRuntimePath.java"]),
+    srcs = glob(
+        ["src/test/java/**/*.java"],
+        exclude = ["src/test/java/org/finos/legend/pure/m2/inlinedsl/path/incremental/TestPureRuntimePath.java"],
+    ),
     visibility = ["//visibility:public"],
     deps = [
         ":legend-pure-m2-dsl-path-grammar",
@@ -74,6 +75,7 @@ java_test(
 pure_test(
     name = "TestPureRuntimePath",
     srcs = ["src/test/java/org/finos/legend/pure/m2/inlinedsl/path/incremental/TestPureRuntimePath.java"],
+    compiled_test_deps = ["//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-runtime-java-extension-compiled-dsl-path"],
     test_class = "org.finos.legend.pure.m2.inlinedsl.path.incremental.TestPureRuntimePath",
     deps = [
         ":legend-pure-m2-dsl-path-grammar",
@@ -87,7 +89,6 @@ pure_test(
         "@legend_maven//:org_eclipse_collections_eclipse_collections",
         "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
     ],
-    compiled_test_deps = ["//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-runtime-java-extension-compiled-dsl-path"],
 )
 
 java_test(

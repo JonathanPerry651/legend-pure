@@ -1,7 +1,7 @@
 load("@rules_java//java:java_binary.bzl", "java_binary")
 load("@rules_java//java:java_library.bzl", "java_library")
-load("//tools/build_rules:pure_generation.bzl", "pure_model_generation")
 load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_par")
+load("//tools/build_rules:pure_generation.bzl", "pure_model_generation")
 
 java_library(
     name = "m2-dsl-tds-pure-boot",
@@ -64,8 +64,8 @@ java_binary(
 pure_par(
     name = "pure_platform_dsl_tds_par",
     out = "pure-platform_dsl_tds.par",
-    tool = ":PureJarGenerator",
     repo_name = "platform_dsl_tds",
+    tool = ":PureJarGenerator",
     visibility = ["//visibility:public"],
 )
 

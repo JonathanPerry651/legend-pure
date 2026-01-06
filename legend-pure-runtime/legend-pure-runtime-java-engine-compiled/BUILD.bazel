@@ -1,5 +1,6 @@
 load("@rules_java//java:defs.bzl", "java_binary", "java_library")
 load("@rules_java//java:java_import.bzl", "java_import")
+load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_java_code_gen", "pure_pct_report")
 load("//tools/build_rules:java_model_generation.bzl", "java_model_generation")
 
 java_library(
@@ -422,26 +423,24 @@ java_binary(
     ],
 )
 
-load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_pct_report", "pure_java_code_gen")
-
 pure_pct_report(
     name = "generate_pct_reports",
     outs = [
         "pct-reports/ADAPTER_essential_compiled_Native.json",
         "pct-reports/ADAPTER_grammar_compiled_Native.json",
     ],
-    tool = ":PCTReportGenerator",
     report_classes = [
         "org.finos.legend.pure.runtime.java.compiled.pct.functions.Test_Compiled_GrammarFunctions_PCT",
         "org.finos.legend.pure.runtime.java.compiled.pct.functions.Test_Compiled_EssentialFunctions_PCT",
     ],
+    tool = ":PCTReportGenerator",
     visibility = ["//visibility:public"],
 )
 
 java_library(
     name = "pct_reports_resources",
-    resources = [":generate_pct_reports"],
     resource_strip_prefix = "legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+    resources = [":generate_pct_reports"],
     visibility = ["//visibility:public"],
 )
 
@@ -484,21 +483,21 @@ java_library(
 
 pure_java_code_gen(
     name = "platform_src",
-    metadata_jar = "platform_metadata.jar",
-    repository = "platform",
-    tool = ":JavaCodeGeneration",
     exclusions = [
         "org/finos/legend/pure/generated/CoreGen.java",
         "org/finos/legend/pure/generated/Root_meta_pure_functions_lang_KeyValue_Impl.java",
     ],
+    metadata_jar = "platform_metadata.jar",
+    repository = "platform",
+    tool = ":JavaCodeGeneration",
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "generate_platform_engine",
     srcs = [
-        ":platform_src",
         ":platform_metadata.jar",
+        ":platform_src",
     ],
     visibility = ["//visibility:public"],
 )

@@ -21,6 +21,9 @@ java_library(
 pure_test(
     name = "TestPureDBFunction",
     srcs = ["src/test/java/org/finos/legend/pure/runtime/java/extension/store/relational/interpreted/natives/test/TestPureDBFunction.java"],
+    compiled_test_deps = [
+        "//legend-pure/legend-pure-store/legend-pure-store-relational/legend-pure-runtime-java-extension-compiled-store-relational",
+    ],
     test_class = "org.finos.legend.pure.runtime.java.extension.store.relational.interpreted.natives.test.TestPureDBFunction",
     deps = [
         ":legend-pure-runtime-java-extension-interpreted-store-relational",
@@ -43,14 +46,14 @@ pure_test(
         "@legend_maven//:org_eclipse_collections_eclipse_collections",
         "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
     ],
-    compiled_test_deps = [
-        "//legend-pure/legend-pure-store/legend-pure-store-relational/legend-pure-runtime-java-extension-compiled-store-relational",
-    ],
 )
 
 pure_test(
     name = "TestTempTableLifecycle",
     srcs = ["src/test/java/org/finos/legend/pure/runtime/java/extension/store/relational/interpreted/natives/test/TestTempTableLifecycle.java"],
+    compiled_test_deps = [
+        "//legend-pure/legend-pure-store/legend-pure-store-relational/legend-pure-runtime-java-extension-compiled-store-relational",
+    ],
     test_class = "org.finos.legend.pure.runtime.java.extension.store.relational.interpreted.natives.test.TestTempTableLifecycle",
     deps = [
         ":legend-pure-runtime-java-extension-interpreted-store-relational",
@@ -72,8 +75,5 @@ pure_test(
         "@legend_maven//:org_duckdb_duckdb_jdbc",
         "@legend_maven//:org_eclipse_collections_eclipse_collections",
         "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
-    ],
-    compiled_test_deps = [
-        "//legend-pure/legend-pure-store/legend-pure-store-relational/legend-pure-runtime-java-extension-compiled-store-relational",
     ],
 )

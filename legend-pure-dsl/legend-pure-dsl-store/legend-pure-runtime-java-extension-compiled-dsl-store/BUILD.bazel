@@ -1,4 +1,5 @@
 load("@rules_java//java:defs.bzl", "java_binary", "java_library")
+load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_generator", "pure_jar_extract", "pure_java_code_gen")
 load("//tools/build_rules:java_model_generation.bzl", "java_model_generation")
 
 java_binary(
@@ -43,10 +44,9 @@ java_binary(
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure:pure_platform_dsl_store_par_lib",
         "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
         ":m3-store-gen-lib",
+        ":m3-store-extension-lib",
     ],
 )
-
-load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_generator", "pure_jar_filter", "pure_java_code_gen", "pure_jar_extract")
 
 pure_java_code_gen(
     name = "generate_store_sources",
@@ -59,11 +59,11 @@ pure_java_code_gen(
 
 pure_jar_extract(
     name = "extract_store_registry",
-    src_jar = ":java_gen",
     include_patterns = [
         "org/finos/legend/pure/generated/StoreJavaModelFactoryRegistry.java",
         "org/finos/legend/pure/generated/*_CompImpl.java",
     ],
+    src_jar = ":java_gen",
 )
 
 pure_generator(
@@ -106,11 +106,25 @@ java_library(
     visibility = ["//visibility:public"],
     deps = [
         "//legend-pure/legend-pure-core/legend-pure-m3-core",
-        "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-grammar",
         "//legend-pure/legend-pure-core/legend-pure-m4",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-grammar",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure:m2-dsl-store-pure-gen",
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
         "@legend_maven//:org_eclipse_collections_eclipse_collections",
         "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+        ":m3-store-extension-lib",
     ],
+)
+
+java_library(
+    name = "m3-store-extension-lib",
+    srcs = ["src/main/java/org/finos/legend/pure/runtime/java/extension/dsl/mapping/compiled/M3StoreExtensionCompiled.java"],
+    resources = glob(["src/main/resources/m3_store_extension/**/*"]),
+    resource_strip_prefix = "legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-runtime-java-extension-compiled-dsl-store/src/main/resources/m3_store_extension",
+    deps = [
+        ":m3-store-gen-lib",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+    visibility = ["//visibility:private"],
 )

@@ -400,9 +400,9 @@ java_library(
     deps = [
         "//legend-pure/legend-pure-core/legend-pure-m3-bootstrap-generator",
         "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3:m3_kernel",
-        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests:AbstractPureTestWithCoreCompiled_lib",
         "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/serialization/filesystem/genericrepository/config:TestGenericRepositoryProvider_lib",
         "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/serialization/filesystem/genericrepository/config:TestOtherGenericRepositoryProvider_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/java/org/finos/legend/pure/m3/tests:AbstractPureTestWithCoreCompiled_lib",
         "//legend-pure/legend-pure-core/legend-pure-m3-core/src/test/resources:test_resources",
         "//legend-pure/legend-pure-core/legend-pure-m4",
         "@legend_maven//:com_fasterxml_jackson_core_jackson_annotations",

@@ -1,4 +1,5 @@
 load("@rules_java//java:defs.bzl", "java_binary", "java_library")
+load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_par")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -23,13 +24,11 @@ java_binary(
     ],
 )
 
-load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_par")
-
 pure_par(
     name = "pure_platform_dsl_path_par",
     out = "pure-platform_dsl_path.par",
-    tool = ":PureJarGenerator",
     repo_name = "platform_dsl_path",
+    tool = ":PureJarGenerator",
 )
 
 java_library(

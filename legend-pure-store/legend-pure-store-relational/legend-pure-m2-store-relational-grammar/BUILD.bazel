@@ -1,6 +1,5 @@
 load("@rules_java//java:defs.bzl", "java_library")
 load("@rules_java//java:java_test.bzl", "java_test")
-
 load("//legend-pure:grammar.bzl", "antlr_gen")
 
 antlr_gen(

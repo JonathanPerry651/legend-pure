@@ -78,8 +78,6 @@ pure_generator(
     visibility = ["//visibility:public"],
 )
 
-
-
 java_library(
     name = "platform_properties_lib",
     resource_strip_prefix = "legend-pure/legend-pure-core/legend-pure-m3-core",
@@ -147,11 +145,11 @@ pure_pct_report(
         "pct-reports/FUNCTIONS_essential.json",
         "pct-reports/FUNCTIONS_grammar.json",
     ],
-    tool = ":FunctionsGeneration",
     report_classes = [
         "org.finos.legend.pure.m3.PlatformCodeRepositoryProvider.essentialFunctions",
         "org.finos.legend.pure.m3.PlatformCodeRepositoryProvider.grammarFunctions",
     ],
+    tool = ":FunctionsGeneration",
 )
 
 java_library(
@@ -162,7 +160,9 @@ java_library(
 )
 
 # 6. Final Library
-java_library(
+load("//tools/build_rules:java_validation.bzl", "validated_java_library")
+
+validated_java_library(
     name = "legend-pure-m3-core",
     srcs = [
         ":lazy_gen",
@@ -333,8 +333,8 @@ java_binary(
 pure_par(
     name = "platform_par",
     out = "pure-platform.par",
-    tool = ":PureJarGenerator",
     repo_name = "platform",
+    tool = ":PureJarGenerator",
     visibility = ["//visibility:public"],
 )
 
@@ -353,7 +353,10 @@ java_library(
 java_library(
     name = "m3_core_resources",
     resource_strip_prefix = "legend-pure/legend-pure-core/legend-pure-m3-core/src/main/resources",
-    resources = glob(["src/main/resources/**"], exclude = ["src/main/resources/org/finos/legend/pure/platform.properties"]),
+    resources = glob(
+        ["src/main/resources/**"],
+        exclude = ["src/main/resources/org/finos/legend/pure/platform.properties"],
+    ),
     visibility = ["//visibility:public"],
 )
 

@@ -1,20 +1,20 @@
 load("@rules_java//java:defs.bzl", "java_binary", "java_library", "java_test")
-load("//legend-pure:pure_test.bzl", "pure_test")
+load(":relational.bzl", "relational_impl_gen")
 
 java_binary(
     name = "JavaModelFactoryGenerator_Relational",
     srcs = ["src/main/java/org/finos/legend/pure/runtime/java/extension/store/relational/compiled/Dummy.java"],
     main_class = "org.finos.legend.pure.runtime.java.compiled.generation.orchestrator.JavaModelFactoryGenerator",
     visibility = ["//visibility:private"],
+    runtime_deps = [
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure",
+    ],
     deps = [
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-runtime-java-extension-compiled-dsl-mapping",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-runtime-java-extension-compiled-dsl-store",
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
         "//legend-pure/legend-pure-store/legend-pure-store-relational/legend-pure-m2-store-relational-grammar",
-    ],
-    runtime_deps = [
-        "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure",
-        "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure",
     ],
 )
 
@@ -36,7 +36,10 @@ genrule(
 
 java_library(
     name = "legend-pure-runtime-java-extension-compiled-store-relational",
-    srcs = glob(["src/main/java/**/*.java"], exclude = ["src/main/java/**/RelationalGeneratorExtension.java"]) + [
+    srcs = glob(
+        ["src/main/java/**/*.java"],
+        exclude = ["src/main/java/**/RelationalGeneratorExtension.java"],
+    ) + [
         ":relational_impl.srcjar",
     ],
     javacopts = [
@@ -45,9 +48,13 @@ java_library(
         "-Xep:ComparableType:OFF",
         "-Xep:SelfEquals:OFF",
     ],
-    resources = glob(["src/main/resources/**/*"], exclude = ["src/main/resources/generator/**"]),
+    resources = glob(
+        ["src/main/resources/**/*"],
+        exclude = ["src/main/resources/generator/**"],
+    ),
     visibility = ["//visibility:public"],
     deps = [
+        ":relational_impl_resources_import",
         "//legend-pure/legend-pure-core/legend-pure-m3-core",
         "//legend-pure/legend-pure-core/legend-pure-m4",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-grammar",
@@ -61,22 +68,25 @@ java_library(
         "//legend-pure/legend-pure-store/legend-pure-store-relational/legend-pure-runtime-java-extension-shared-store-relational",
         "@legend_maven//:org_eclipse_collections_eclipse_collections",
         "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
-        ":relational_impl_resources_import",
     ],
 )
 
 java_library(
     name = "relational_gen_resource_lib",
-    resources = ["src/main/resources/org/finos/legend/pure/runtime/java/extension/store/relational/compiled/RelationalGen.java"],
     resource_strip_prefix = "legend-pure/legend-pure-store/legend-pure-store-relational/legend-pure-runtime-java-extension-compiled-store-relational/src/main/resources",
+    resources = ["src/main/resources/org/finos/legend/pure/runtime/java/extension/store/relational/compiled/RelationalGen.java"],
     visibility = ["//visibility:private"],
 )
 
 java_library(
     name = "generator_ext",
-    srcs = glob(["src/main/java/**/*.java"], exclude = ["src/main/java/**/RelationalGeneratorExtension.java"]),
-    resources = glob(["src/main/resources/generator/**/*"]),
+    srcs = glob(
+        ["src/main/java/**/*.java"],
+        exclude = ["src/main/java/**/RelationalGeneratorExtension.java"],
+    ),
     resource_strip_prefix = "legend-pure/legend-pure-store/legend-pure-store-relational/legend-pure-runtime-java-extension-compiled-store-relational/src/main/resources/generator",
+    resources = glob(["src/main/resources/generator/**/*"]),
+    visibility = ["//visibility:private"],
     deps = [
         ":relational_gen_resource_lib",
         "//legend-pure/legend-pure-core/legend-pure-m3-core",
@@ -93,7 +103,6 @@ java_library(
         "@legend_maven//:org_eclipse_collections_eclipse_collections",
         "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
     ],
-    visibility = ["//visibility:private"],
 )
 
 java_binary(
@@ -123,14 +132,12 @@ java_binary(
     ],
 )
 
-load(":relational.bzl", "relational_impl_gen")
-
 relational_impl_gen(
     name = "relational_impl",
     srcs = [
-        "//legend-pure/legend-pure-store/legend-pure-store-relational/legend-pure-m2-store-relational-pure:pure_platform_store_relational_par_lib",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure:pure_platform_dsl_mapping_par_lib",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure:pure_platform_dsl_store_par_lib",
+        "//legend-pure/legend-pure-store/legend-pure-store-relational/legend-pure-m2-store-relational-pure:pure_platform_store_relational_par_lib",
     ],
     tool = ":JavaCodeGeneration_Relational",
     visibility = ["//visibility:public"],
@@ -159,8 +166,8 @@ java_test(
         "//legend-pure/legend-pure-core/legend-pure-m3-core",
         "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
         "//legend-pure/legend-pure-core/legend-pure-m4",
-        "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure:pure_platform_dsl_mapping_par_lib",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure:pure_platform_dsl_mapping_par_lib",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-runtime-java-extension-compiled-dsl-mapping",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure:pure_platform_dsl_store_par_lib",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-runtime-java-extension-compiled-dsl-store",
@@ -194,22 +201,22 @@ java_test(
     deps = [
         ":compiled-store-relational-test-gen",
         ":legend-pure-runtime-java-extension-compiled-store-relational",
-        "//legend-pure/legend-pure-dsl/legend-pure-dsl-graph/legend-pure-m2-dsl-graph-grammar",
-        "//legend-pure/legend-pure-dsl/legend-pure-dsl-graph/legend-pure-runtime-java-extension-compiled-dsl-graph",
-        "//legend-pure/legend-pure-dsl/legend-pure-dsl-graph/legend-pure-m2-dsl-graph-pure:pure_platform_dsl_graph_par_lib",
         "//legend-pure/legend-pure-core/legend-pure-m3-core",
         "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
         "//legend-pure/legend-pure-core/legend-pure-m4",
-        "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure:pure_platform_dsl_mapping_par_lib",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-graph/legend-pure-m2-dsl-graph-grammar",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-graph/legend-pure-m2-dsl-graph-pure:pure_platform_dsl_graph_par_lib",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-graph/legend-pure-runtime-java-extension-compiled-dsl-graph",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure:pure_platform_dsl_mapping_par_lib",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-runtime-java-extension-compiled-dsl-mapping",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure:pure_platform_dsl_store_par_lib",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-runtime-java-extension-compiled-dsl-store",
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:platform_metadata",
-        "//legend-pure/legend-pure-store/legend-pure-store-relational/legend-pure-m2-store-relational-pure:pure_platform_store_relational_par_lib",
         "//legend-pure/legend-pure-store/legend-pure-store-relational/legend-pure-m2-store-relational-grammar",
         "//legend-pure/legend-pure-store/legend-pure-store-relational/legend-pure-m2-store-relational-grammar:grammar-test-utils",
+        "//legend-pure/legend-pure-store/legend-pure-store-relational/legend-pure-m2-store-relational-pure:pure_platform_store_relational_par_lib",
         "@legend_maven//:com_h2database_h2",
         "@legend_maven//:junit_junit",
         "@legend_maven//:org_duckdb_duckdb_jdbc",

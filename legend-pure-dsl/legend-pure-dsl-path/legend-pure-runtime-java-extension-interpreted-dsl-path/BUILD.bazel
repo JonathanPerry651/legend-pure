@@ -1,5 +1,4 @@
 load("@rules_java//java:defs.bzl", "java_library")
-load("@rules_java//java:java_test.bzl", "java_test")
 load("//legend-pure:pure_test.bzl", "pure_test")
 
 java_library(
@@ -18,6 +17,7 @@ java_library(
 pure_test(
     name = "TestDSLExecution",
     srcs = ["src/test/java/org/finos/legend/pure/runtime/java/interpreted/path/TestDSLExecution.java"],
+    compiled_test_deps = ["//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-runtime-java-extension-compiled-dsl-path"],
     test_class = "org.finos.legend.pure.runtime.java.interpreted.path.TestDSLExecution",
     deps = [
         ":legend-pure-runtime-java-extension-interpreted-dsl-path",
@@ -32,5 +32,4 @@ pure_test(
         "@legend_maven//:org_eclipse_collections_eclipse_collections",
         "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
     ],
-    compiled_test_deps = ["//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-runtime-java-extension-compiled-dsl-path"]
 )

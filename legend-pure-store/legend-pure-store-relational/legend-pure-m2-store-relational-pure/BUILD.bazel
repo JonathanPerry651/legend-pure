@@ -31,9 +31,9 @@ java_binary(
 pure_model_generation(
     name = "pure_gen",
     srcs = glob(["src/main/resources/**/*.pure"]),
+    file_name_startswith = "meta::relational",
     model_name = "RelationalStore",
     source_path = "/platform_store_relational/grammar/relational.pure,/platform_store_relational/grammar/relationalMapping.pure",
-    file_name_startswith = "meta::relational",
     tool = ":M3CoreInstanceGenerator",
     visibility = ["//visibility:public"],
 )

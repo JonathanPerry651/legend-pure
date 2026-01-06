@@ -1,23 +1,23 @@
-load("//tools:zip_tree_artifacts.bzl", "zip_tree_artifacts")
 load("@rules_java//java:defs.bzl", "java_common")
+load("//tools:zip_tree_artifacts.bzl", "zip_tree_artifacts")
 
 def _relational_impl_gen_impl(ctx):
     out_srcjar = ctx.outputs.srcjar
     out_resjar = ctx.outputs.resources_jar
     tool = ctx.executable.tool
-    
+
     # Declare directories
     gen_sources = ctx.actions.declare_directory(ctx.label.name + "_sources")
     gen_resources = ctx.actions.declare_directory(ctx.label.name + "_resources")
-    
+
     # Tool args: <repo_name> <resources_dir> <sources_dir>
     # Note from genrule: platform_store_relational generated-resources generated-sources
-    
+
     args = ctx.actions.args()
     args.add("platform_store_relational")
     args.add(gen_resources.path)
     args.add(gen_sources.path)
-    
+
     # Tool execution
     # We also need to patch the registry.
     # Since patching modifies the output of the tool, we can do it in a subsequent action,
@@ -25,9 +25,9 @@ def _relational_impl_gen_impl(ctx):
     # For hermeticity, separate actions are fine but we need to declare intermediate dir if we want to modify it?
     # Actually, we can modify the directory content in place if we own the directory creation in the action.
     # The tool writes to it.
-    
+
     # Let's use a single shell command for generation + patching to keep it simple and avoid copying.
-    
+
     patch_script = """
     set -e
     # Run Tool
@@ -56,18 +56,18 @@ def _relational_impl_gen_impl(ctx):
     sed -i 's/platform_store_relational/Relational/g' "$DIR/$TARGET_NAME"
     """.format(
         tool_path = tool.path,
-        sources_path = gen_sources.path
+        sources_path = gen_sources.path,
     )
-    
+
     ctx.actions.run_shell(
         outputs = [gen_sources, gen_resources],
-        inputs = ctx.files.srcs, # Inputs (par files?)
+        inputs = ctx.files.srcs,  # Inputs (par files?)
         tools = [tool],
         arguments = [args],
         command = patch_script,
         mnemonic = "RelationalImplGen",
     )
-    
+
     # Zip artifacts
     zip_tree_artifacts(
         ctx,
@@ -81,7 +81,7 @@ def _relational_impl_gen_impl(ctx):
         inputs = [gen_resources],
         java_runtime_target = ctx.attr._jdk,
     )
-    
+
     return [DefaultInfo(files = depset([out_srcjar, out_resjar]))]
 
 relational_impl_gen = rule(

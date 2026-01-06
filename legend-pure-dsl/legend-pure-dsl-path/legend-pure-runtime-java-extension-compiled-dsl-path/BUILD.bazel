@@ -1,6 +1,5 @@
 load("@rules_java//java:defs.bzl", "java_binary", "java_library")
 load("@rules_java//java:java_test.bzl", "java_test")
-
 load("//tools/build_rules:java_model_generation.bzl", "java_model_generation")
 
 java_binary(
@@ -69,8 +68,6 @@ java_library(
         "@legend_maven//:org_eclipse_collections_eclipse_collections_testutils",
     ],
 )
-
-
 
 java_test(
     name = "TestMatchCompiled",

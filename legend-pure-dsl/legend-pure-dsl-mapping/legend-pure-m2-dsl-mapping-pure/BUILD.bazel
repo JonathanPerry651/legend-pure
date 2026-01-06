@@ -1,5 +1,6 @@
 load("@rules_java//java:java_binary.bzl", "java_binary")
 load("@rules_java//java:java_library.bzl", "java_library")
+load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_par")
 load("//tools/build_rules:pure_generation.bzl", "pure_model_generation")
 
 java_library(
@@ -69,13 +70,11 @@ java_binary(
     ],
 )
 
-load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_par")
-
 pure_par(
     name = "pure_platform_dsl_mapping_par",
     out = "pure-platform_dsl_mapping.par",
-    tool = ":PureJarGenerator",
     repo_name = "platform_dsl_mapping",
+    tool = ":PureJarGenerator",
     visibility = ["//visibility:public"],
 )
 

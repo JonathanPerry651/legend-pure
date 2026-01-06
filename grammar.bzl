@@ -1,4 +1,4 @@
-load("@rules_java//java:defs.bzl", "java_binary", "java_common")
+load("@rules_java//java:defs.bzl", "java_common")
 load("//tools:zip_tree_artifacts.bzl", "zip_tree_artifacts")
 
 def _get_package_name(file):
@@ -11,7 +11,7 @@ def _get_package_name(file):
     return ""
 
 def _get_output_dir_path(file):
-     # Calculates directory path relative to src/main/antlr4
+    # Calculates directory path relative to src/main/antlr4
     path = file.short_path
     if "src/main/antlr4/" in path:
         rel_path = path.split("src/main/antlr4/")[1]
@@ -21,11 +21,11 @@ def _get_output_dir_path(file):
 def _antlr_gen_impl(ctx):
     srcs = ctx.files.srcs
     tool = ctx.executable.tool
-    
+
     # 1. Create Lib Dir components using symlinks
     lib_files = []
     lib_dir_path = ctx.label.name + "_lib"
-    
+
     for f in srcs:
         symlink_out = ctx.actions.declare_file(lib_dir_path + "/" + f.basename)
         ctx.actions.symlink(output = symlink_out, target_file = f)
@@ -34,11 +34,11 @@ def _antlr_gen_impl(ctx):
     # Filter sources
     lexers = []
     parsers = []
-    
+
     for f in srcs:
         if "/core/" in f.short_path or f.basename.endswith("CoreParserGrammar.g4"):
             continue
-            
+
         if "Lexer" in f.basename:
             lexers.append(f)
         else:
@@ -52,10 +52,10 @@ def _antlr_gen_impl(ctx):
     for lexer in lexers:
         package = _get_package_name(lexer)
         rel_dir = _get_output_dir_path(lexer)
-        
+
         out_dir = ctx.actions.declare_directory(ctx.label.name + "_lexer_out_" + lexer.basename)
         all_gen_dirs.append(out_dir)
-        
+
         ctx.actions.run_shell(
             outputs = [out_dir],
             inputs = lib_files + [lexer],
@@ -84,12 +84,12 @@ def _antlr_gen_impl(ctx):
             mnemonic = "AntlrLexer",
             progress_message = "Generating ANTLR lexer for %s" % lexer.short_path,
         )
-        
+
         generated_tokens.append(out_dir)
 
     # 3. Update Lib with Tokens (Phase 2)
     lib_phase2_dir = ctx.actions.declare_directory(ctx.label.name + "_lib_phase2")
-    
+
     ctx.actions.run_shell(
         inputs = lib_files + generated_tokens,
         outputs = [lib_phase2_dir],
@@ -113,7 +113,7 @@ def _antlr_gen_impl(ctx):
     for parser in parsers:
         package = _get_package_name(parser)
         rel_dir = _get_output_dir_path(parser)
-        
+
         out_dir = ctx.actions.declare_directory(ctx.label.name + "_parser_out_" + parser.basename)
         all_gen_dirs.append(out_dir)
 
@@ -149,14 +149,14 @@ def _antlr_gen_impl(ctx):
 
     # 5. Package results
     out_srcjar = ctx.outputs.srcjar
-    
+
     zip_tree_artifacts(
         ctx,
         output = out_srcjar,
         inputs = all_gen_dirs,
         java_runtime_target = ctx.attr._jdk,
     )
-    
+
     return [DefaultInfo(files = depset([out_srcjar]))]
 
 antlr_gen = rule(
