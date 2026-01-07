@@ -318,7 +318,7 @@ def _pure_java_code_gen_impl(ctx):
         outputs = [classes_dir, target_dir, tool_output],
         inputs = srcs,
         tools = [tool],
-        command = "{tool_path} $1 $2 $3 > {out} 2>&1".format(
+        command = "{tool_path} $1 $2 $3 > {out} 2>&1 || (cat {out} && exit 1)".format(
             tool_path = tool.path,
             out = tool_output.path,
         ),
@@ -391,6 +391,17 @@ def _pure_java_code_gen_impl(ctx):
              
              if [ -d "$src_dir/generated-test-sources" ]; then
                  cp -r "$src_dir/generated-test-sources"/. "$dest_dir/"
+             fi
+
+             if [ -f "$src_dir/dependencies.json" ]; then
+                 cp "$src_dir/dependencies.json" "$dest_dir/"
+             fi
+
+             if [ ! -f "$dest_dir/dependencies.json" ]; then
+                 echo "CRITICAL ERROR: dependencies.json NOT FOUND in $dest_dir (checked src_dir root and subdirs)"
+                 echo "Source Dir layout:"
+                 ls -R "$src_dir"
+                 exit 1
              fi
              
              # Apply exclusions

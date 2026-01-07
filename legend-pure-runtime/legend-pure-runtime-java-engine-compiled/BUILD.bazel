@@ -2,6 +2,7 @@ load("@rules_java//java:defs.bzl", "java_binary", "java_library")
 load("@rules_java//java:java_import.bzl", "java_import")
 load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_java_code_gen", "pure_pct_report")
 load("//tools/build_rules:java_model_generation.bzl", "java_model_generation")
+load("//tools/build_rules:java_partition.bzl", "partitioned_java_library")
 
 java_library(
     name = "engine_deps",
@@ -62,6 +63,7 @@ java_library(
         "src/main/java/org/finos/legend/pure/runtime/java/compiled/extension/CompiledExtensionLoader.java",
         "src/main/java/org/finos/legend/pure/runtime/java/compiled/factory/JavaModelFactoryRegistry.java",
         "src/main/java/org/finos/legend/pure/runtime/java/compiled/factory/JavaModelFactoryRegistryLoader.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/compiled/generation/DependencyGraphBuilder.java",
         "src/main/java/org/finos/legend/pure/runtime/java/compiled/generation/ExternalClassBuilder.java",
         "src/main/java/org/finos/legend/pure/runtime/java/compiled/generation/Generate.java",
         "src/main/java/org/finos/legend/pure/runtime/java/compiled/generation/GenerateAndCompile.java",
@@ -451,14 +453,29 @@ java_model_generation(
     tool = ":JavaModelFactoryGenerator",
 )
 
-java_library(
-    name = "compiled_engine_generated",
+genrule(
+    name = "platform_merged_src",
     srcs = [
+        ":platform_src.srcjar",
         "src/main/java/org/finos/legend/pure/generated/CoreGen.java",
         "src/main/java/org/finos/legend/pure/generated/Root_meta_pure_functions_lang_KeyValue.java",
         "src/main/java/org/finos/legend/pure/generated/Root_meta_pure_functions_lang_KeyValue_Impl.java",
-        ":platform_src.srcjar",
     ],
+    outs = ["platform_merged.srcjar"],
+    cmd = """
+        cp $(location :platform_src.srcjar) $@
+        chmod +w $@
+        src_root="legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/main/java"
+        out_abs=$$(pwd)/$@
+        pushd $$src_root > /dev/null
+        jar -uf $$out_abs org/finos/legend/pure/generated/CoreGen.java org/finos/legend/pure/generated/Root_meta_pure_functions_lang_KeyValue.java org/finos/legend/pure/generated/Root_meta_pure_functions_lang_KeyValue_Impl.java
+        popd > /dev/null
+    """,
+)
+
+partitioned_java_library(
+    name = "compiled_engine_generated",
+    src = ":platform_merged.srcjar",
     javacopts = [
         "-Xep:IdentityBinaryExpression:OFF",
         "-Xep:IsInstanceIncompatibleType:OFF",

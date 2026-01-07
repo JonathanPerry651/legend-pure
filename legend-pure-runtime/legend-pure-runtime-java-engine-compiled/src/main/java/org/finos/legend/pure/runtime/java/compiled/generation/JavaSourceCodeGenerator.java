@@ -459,6 +459,7 @@ public final class JavaSourceCodeGenerator {
                     if (Instance.instanceOf(coreInstance, M3Paths.ConcreteFunctionDefinition, this.processorSupport)) {
                         FunctionProcessor.processFunctionDefinition(coreInstance, processorContext,
                                 this.processorSupport);
+                        this.processedClasses.add(coreInstance);
                     }
                     if (Instance.instanceOf(coreInstance, M3Paths.NativeFunction, this.processorSupport)) {
                         processorContext.getNativeFunctionProcessor().buildNativeLambdaFunction(coreInstance,
@@ -466,6 +467,13 @@ public final class JavaSourceCodeGenerator {
                     }
                     if (Instance.instanceOf(coreInstance, M3Paths.Measure, this.processorSupport)) {
                         MeasureProcessor.processMeasure(coreInstance, processorContext);
+                        this.processedClasses.add(coreInstance);
+                        CoreInstance canonical = Instance.getValueForMetaPropertyToOneResolved(coreInstance, M3Properties.canonicalUnit, this.processorSupport);
+                        if (canonical != null)
+                        {
+                            this.processedClasses.add(canonical);
+                        }
+                        coreInstance.getValueForMetaPropertyToMany(M3Properties.nonCanonicalUnits).forEach(this.processedClasses::add);
                     }
                     // We only want to execute if the related repository is available.
                     // Otherwise the type are not in the model and the instanceOf code will fail
@@ -792,6 +800,10 @@ public final class JavaSourceCodeGenerator {
 
     public void addToProcessedClasses(RichIterable<CoreInstance> processedClasses) {
         this.processedClasses.addAllIterable(processedClasses);
+    }
+
+    public MutableSet<CoreInstance> getProcessedClasses() {
+        return this.processedClasses;
     }
 
     public boolean hasJavaSerializationSupport(CoreInstance coreInstance) {

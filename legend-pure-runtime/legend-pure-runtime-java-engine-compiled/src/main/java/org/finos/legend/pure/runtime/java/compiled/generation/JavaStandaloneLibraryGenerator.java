@@ -45,6 +45,13 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.function.Predicate;
 import java.util.jar.JarOutputStream;
+import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.set.MutableSet;
+import org.eclipse.collections.api.factory.Sets;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 
 public class JavaStandaloneLibraryGenerator
@@ -55,6 +62,7 @@ public class JavaStandaloneLibraryGenerator
     private final String externalAPIPackage;
     private final Log log;
     private final boolean generatePureTests;
+    private final MutableList<JavaSourceCodeGenerator> generators = Lists.mutable.empty();
 
     private JavaStandaloneLibraryGenerator(PureRuntime runtime, Iterable<? extends CompiledExtension> extensions, boolean addExternalAPI, String externalAPIPackage, boolean generatePureTests, Log log)
     {
@@ -208,6 +216,10 @@ public class JavaStandaloneLibraryGenerator
                 log.debug("    Skipping External API generation");
             }
         }
+        if (writeJavaSourcesToDisk && pathToWriteTo != null)
+        {
+            this.writeDependencyGraph(pathToWriteTo);
+        }
         return generateAndCompile.getPureJavaCompiler();
     }
 
@@ -250,6 +262,10 @@ public class JavaStandaloneLibraryGenerator
                 log.debug("    Skipping External API generation");
             }
         }
+        if (writeJavaSourcesToDisk && pathToWriteTo != null)
+        {
+            this.writeDependencyGraph(pathToWriteTo);
+        }
         return generate;
     }
 
@@ -259,6 +275,7 @@ public class JavaStandaloneLibraryGenerator
         String registryName = "platform".equals(compileGroup) ? "Core" : compileGroup;
         JavaSourceCodeGenerator javaSourceCodeGenerator = new JavaSourceCodeGenerator(this.runtime.getProcessorSupport(), idBuilder, this.runtime.getCodeStorage(), writeJavaSourcesToDisk, pathToWriteTo, false, this.extensions, registryName, this.externalAPIPackage, true);
         javaSourceCodeGenerator.collectClassesToSerialize();
+        this.generators.add(javaSourceCodeGenerator);
         return javaSourceCodeGenerator;
     }
 
@@ -339,5 +356,31 @@ public class JavaStandaloneLibraryGenerator
             compile.compileExternalizableAPI(externalizableSources);
         }
         return compile.getPureJavaCompiler();
+    }
+
+    private void writeDependencyGraph(Path directory)
+    {
+        MutableSet<org.finos.legend.pure.m4.coreinstance.CoreInstance> allProcessedClasses = Sets.mutable.empty();
+        this.generators.forEach(gen -> allProcessedClasses.addAll(gen.getProcessedClasses()));
+
+        DependencyGraphBuilder graphBuilder = new DependencyGraphBuilder(this.runtime.getProcessorSupport());
+        MutableMap<String, MutableSet<String>> graph = graphBuilder.buildGraph(allProcessedClasses);
+
+        JSONObject json = new JSONObject();
+        graph.forEachKeyValue((k, v) ->
+        {
+            JSONArray deps = new JSONArray();
+            deps.addAll(v);
+            json.put(k, deps);
+        });
+
+        try
+        {
+            Files.write(directory.resolve("dependencies.json"), json.toJSONString().getBytes(StandardCharsets.UTF_8));
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 }
