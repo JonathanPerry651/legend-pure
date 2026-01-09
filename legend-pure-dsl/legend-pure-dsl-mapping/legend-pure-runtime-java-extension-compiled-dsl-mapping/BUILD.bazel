@@ -1,14 +1,4 @@
-load("@rules_java//java:defs.bzl", "java_library")
-load("@rules_java//java:java_binary.bzl", "java_binary")
-load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_jar_extract", "pure_java_code_gen")
-load("//tools/build_rules:java_model_generation.bzl", "java_model_generation")
-
-java_model_generation(
-    name = "java_gen",
-    factory_class = "org.finos.legend.pure.m2.dsl.mapping.serialization.grammar.v1.MappingParser,org.finos.legend.pure.m2.dsl.mapping.serialization.grammar.v1.OperationParser,org.finos.legend.pure.m2.dsl.mapping.serialization.grammar.v1.EnumerationMappingParser,org.finos.legend.pure.m2.dsl.mapping.serialization.grammar.v1.AggregationAwareParser",
-    model_name = "Mapping",
-    tool = ":JavaModelFactoryGenerator_Mapping",
-)
+load("//tools/build_rules:legend_java_library.bzl", "legend_java_library")
 
 java_binary(
     name = "JavaModelFactoryGenerator_Mapping",
@@ -40,27 +30,17 @@ java_binary(
     ],
 )
 
-pure_java_code_gen(
-    name = "generate_mapping_sources",
-    srcs = [
-        "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure:pure_platform_dsl_mapping_par_lib",
-    ],
-    repository = "platform_dsl_mapping",
-    tool = ":JavaCodeGeneration_Mapping",
-)
-
-pure_jar_extract(
-    name = "extract_mapping_registry",
-    include_patterns = ["org/finos/legend/pure/generated/MappingJavaModelFactoryRegistry.java"],
-    src_jar = ":java_gen",
-)
-
-java_library(
+legend_java_library(
     name = "legend-pure-runtime-java-extension-compiled-dsl-mapping",
-    srcs = [
-        ":extract_mapping_registry",
-        ":generate_mapping_sources",
-    ] + glob(["src/main/java/**/*.java"]),
+    src_root = "legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-runtime-java-extension-compiled-dsl-mapping/src/main/java",
+    srcs = glob(["src/main/java/**/*.java"]),
+    pure_repository = "platform_dsl_mapping",
+    pure_srcs = ["//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure:pure_platform_dsl_mapping_par_lib"],
+    pure_generator = ":JavaCodeGeneration_Mapping",
+    model_name = "Mapping",
+    model_factory_class = "org.finos.legend.pure.m2.dsl.mapping.serialization.grammar.v1.MappingParser,org.finos.legend.pure.m2.dsl.mapping.serialization.grammar.v1.OperationParser,org.finos.legend.pure.m2.dsl.mapping.serialization.grammar.v1.EnumerationMappingParser,org.finos.legend.pure.m2.dsl.mapping.serialization.grammar.v1.AggregationAwareParser",
+    model_inclusions = ["org/finos/legend/pure/generated/MappingJavaModelFactoryRegistry.java"],
+    model_generator = ":JavaModelFactoryGenerator_Mapping",
     javacopts = [
         "-Xep:IdentityBinaryExpression:OFF",
         "-Xep:IsInstanceIncompatibleType:OFF",

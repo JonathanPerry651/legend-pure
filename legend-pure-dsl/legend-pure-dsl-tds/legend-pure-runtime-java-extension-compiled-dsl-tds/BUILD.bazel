@@ -1,6 +1,4 @@
-load("@rules_java//java:defs.bzl", "java_library")
-load("@rules_java//java:java_binary.bzl", "java_binary")
-load("//tools/build_rules:java_model_generation.bzl", "java_model_generation")
+load("//tools/build_rules:legend_java_library.bzl", "legend_java_library")
 
 java_binary(
     name = "JavaModelFactoryGeneratorTDS",
@@ -12,17 +10,14 @@ java_binary(
     ],
 )
 
-java_model_generation(
-    name = "java_gen",
-    srcs = ["//legend-pure/legend-pure-dsl/legend-pure-dsl-tds/legend-pure-m2-dsl-tds-pure:pure_gen"],
-    factory_class = "org.finos.legend.pure.m2.inlinedsl.tds.TDSExtension",
-    model_name = "TDS",
-    tool = ":JavaModelFactoryGeneratorTDS",
-)
-
-java_library(
+legend_java_library(
     name = "legend-pure-runtime-java-extension-compiled-dsl-tds",
-    srcs = [":java_gen"] + glob(["src/main/java/**/*.java"]),
+    src_root = "legend-pure/legend-pure-dsl/legend-pure-dsl-tds/legend-pure-runtime-java-extension-compiled-dsl-tds/src/main/java",
+    srcs = glob(["src/main/java/**/*.java"]),
+    model_name = "TDS",
+    model_factory_class = "org.finos.legend.pure.m2.inlinedsl.tds.TDSExtension",
+    model_srcs = ["//legend-pure/legend-pure-dsl/legend-pure-dsl-tds/legend-pure-m2-dsl-tds-pure:pure_gen"],
+    model_generator = ":JavaModelFactoryGeneratorTDS",
     javacopts = [
         "-Xep:IdentityBinaryExpression:OFF",
         "-Xep:IsInstanceIncompatibleType:OFF",

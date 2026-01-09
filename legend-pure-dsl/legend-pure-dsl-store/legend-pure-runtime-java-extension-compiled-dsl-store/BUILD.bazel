@@ -1,6 +1,6 @@
 load("@rules_java//java:defs.bzl", "java_binary", "java_library")
 load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_generator", "pure_jar_extract", "pure_java_code_gen")
-load("//tools/build_rules:java_model_generation.bzl", "java_model_generation")
+load("//tools/build_rules:legend_java_library.bzl", "legend_java_library")
 
 java_binary(
     name = "JavaModelFactoryGenerator_Store",
@@ -23,12 +23,27 @@ java_binary(
     ],
 )
 
-java_model_generation(
+legend_java_library(
     name = "java_gen",
     srcs = ["//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure:pure_gen"],
-    factory_class = "org.finos.legend.pure.m2.inlinedsl.store.RelationStoreAccessor",
     model_name = "Store",
-    tool = ":JavaModelFactoryGenerator_Store",
+    model_factory_class = "org.finos.legend.pure.m2.inlinedsl.store.RelationStoreAccessor",
+    model_generator = ":JavaModelFactoryGenerator_Store",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure:m2-dsl-store-pure-gen",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+    javacopts = [
+        "-Xep:IdentityBinaryExpression:OFF",
+        "-Xep:IsInstanceIncompatibleType:OFF",
+        "-Xep:ComparableType:OFF",
+        "-Xep:SelfEquals:OFF",
+    ],
 )
 
 java_binary(
@@ -63,7 +78,7 @@ pure_jar_extract(
         "org/finos/legend/pure/generated/StoreJavaModelFactoryRegistry.java",
         "org/finos/legend/pure/generated/*_CompImpl.java",
     ],
-    src_jar = ":java_gen",
+    src_jar = ":java_gen_model_gen.srcjar",
 )
 
 pure_generator(

@@ -1,16 +1,12 @@
-load("@rules_java//java:defs.bzl", "java_library")
-load("//tools/build_rules:java_model_generation.bzl", "java_model_generation")
+load("//tools/build_rules:legend_java_library.bzl", "legend_java_library")
 
-java_model_generation(
-    name = "java_gen",
-    srcs = ["//legend-pure/legend-pure-dsl/legend-pure-dsl-diagram/legend-pure-m2-dsl-diagram-pure:pure_gen"],
-    factory_class = "org.finos.legend.pure.m2.dsl.diagram.serialization.grammar.DiagramParser",
-    model_name = "Diagram",
-)
-
-java_library(
+legend_java_library(
     name = "legend-pure-runtime-java-extension-compiled-dsl-diagram",
-    srcs = [":java_gen"] + glob(["src/main/java/**/*.java"]),
+    src_root = "legend-pure/legend-pure-dsl/legend-pure-dsl-diagram/legend-pure-runtime-java-extension-compiled-dsl-diagram/src/main/java",
+    srcs = glob(["src/main/java/**/*.java"]),
+    model_name = "Diagram",
+    model_factory_class = "org.finos.legend.pure.m2.dsl.diagram.serialization.grammar.DiagramParser",
+    model_srcs = ["//legend-pure/legend-pure-dsl/legend-pure-dsl-diagram/legend-pure-m2-dsl-diagram-pure:pure_gen"],
     javacopts = [
         "-Xep:IdentityBinaryExpression:OFF",
         "-Xep:IsInstanceIncompatibleType:OFF",

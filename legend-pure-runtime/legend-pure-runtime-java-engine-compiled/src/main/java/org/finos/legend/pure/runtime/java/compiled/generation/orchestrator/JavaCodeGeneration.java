@@ -110,7 +110,7 @@ public class JavaCodeGeneration
                     false,
                     false,
                     args.length == 4 ? args[3] : "",
-                    true,
+                    Boolean.parseBoolean(System.getProperty("pure.usePar", "true")),
                     true,
                     true,
                     true,

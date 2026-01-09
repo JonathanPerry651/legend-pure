@@ -203,7 +203,22 @@ java_library(
         "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/tools/locks",
         "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/tools/test",
         "//legend-pure/legend-pure-core/legend-pure-m3-core/src/main/java/org/finos/legend/pure/m3/tools/tree",
+        ":platform_metadata_lib",
     ],
+)
+
+java_library(
+    name = "platform_metadata_lib",
+    resources = [":platform_metadata"],
+    resource_strip_prefix = "legend-pure/legend-pure-core/legend-pure-m3-core",
+    visibility = ["//visibility:public"],
+)
+
+genrule(
+    name = "platform_metadata",
+    outs = ["metadata/specs/platform.json"],
+    cmd = "mkdir -p $$(dirname $@) && echo '{\"name\": \"platform\", \"dependencies\": []}' > $@",
+    visibility = ["//visibility:public"],
 )
 
 java_library(
@@ -365,4 +380,35 @@ genrule(
     srcs = [":platform_par"],
     outs = ["inspection.txt"],
     cmd = "unzip -l $(location :platform_par) > $(OUTS)",
+)
+
+java_import(
+    name = "platform_par_java_import",
+    jars = [":pure-platform.par"],
+    visibility = ["//visibility:public"],
+)
+
+genrule(
+    name = "platform_compiled_graph",
+    srcs = glob(["src/main/resources/**/*.pure"]),
+    outs = ["platform_compiled_metadata.jar"],
+    tools = ["//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:JavaCodeGeneration"],
+    cmd = """
+    mkdir -p $(@D)/platform_gen_out
+    mkdir -p $(@D)/platform_classes_out
+    export JAVA_OPTS="-Dpure.usePar=false"
+    $(location //legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:JavaCodeGeneration) \
+        platform \
+        $(@D)/platform_classes_out \
+        $(@D)/platform_gen_out
+
+    jar cf $@ -C $(@D)/platform_classes_out metadata
+    """,
+    visibility = ["//visibility:public"],
+)
+
+java_import(
+    name = "platform_compiled_graph_import",
+    jars = [":platform_compiled_metadata.jar"],
+    visibility = ["//visibility:public"],
 )

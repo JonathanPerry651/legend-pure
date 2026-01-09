@@ -59,7 +59,22 @@ java_library(
     exports = [
         ":m2-store-relational-pure-boot",
         ":m2-store-relational-pure-gen",
+        ":platform_store_relational_metadata_lib",
     ],
+)
+
+java_library(
+    name = "platform_store_relational_metadata_lib",
+    resources = [":platform_store_relational_metadata"],
+    resource_strip_prefix = "legend-pure/legend-pure-store/legend-pure-store-relational/legend-pure-m2-store-relational-pure",
+    visibility = ["//visibility:public"],
+)
+
+genrule(
+    name = "platform_store_relational_metadata",
+    outs = ["metadata/specs/platform_store_relational.json"],
+    cmd = "mkdir -p $$(dirname $@) && echo '{\"name\": \"platform_store_relational\", \"dependencies\": [\"platform\", \"platform_dsl_mapping\", \"platform_dsl_store\"]}' > $@",
+    visibility = ["//visibility:public"],
 )
 
 java_binary(
@@ -97,5 +112,42 @@ java_library(
     name = "pure_platform_store_relational_par_lib",
     resource_strip_prefix = "legend-pure/legend-pure-store/legend-pure-store-relational/legend-pure-m2-store-relational-pure",
     resources = [":pure-platform_store_relational.par"],
+    visibility = ["//visibility:public"],
+)
+
+java_binary(
+    name = "compiled_metadata_generator",
+    main_class = "org.finos.legend.pure.runtime.java.compiled.generation.orchestrator.JavaCodeGeneration",
+    runtime_deps = [
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        ":legend-pure-m2-store-relational-pure",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+genrule(
+    name = "platform_store_relational_compiled_graph",
+    srcs = glob(["src/main/resources/**/*"]),
+    outs = ["platform_store_relational_compiled_metadata.jar"],
+    tools = [":compiled_metadata_generator"],
+    cmd = """
+    mkdir -p $(@D)/relational_gen_out
+    mkdir -p $(@D)/relational_classes_out
+    export JAVA_OPTS="-Dpure.usePar=false"
+    $(location :compiled_metadata_generator) \
+        platform_store_relational \
+        $(@D)/relational_classes_out \
+        $(@D)/relational_gen_out
+
+    jar cf $@ -C $(@D)/relational_classes_out metadata
+    """,
+    visibility = ["//visibility:public"],
+)
+
+java_import(
+    name = "platform_store_relational_compiled_graph_import",
+    jars = [":platform_store_relational_compiled_metadata.jar"],
     visibility = ["//visibility:public"],
 )

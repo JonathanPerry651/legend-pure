@@ -41,6 +41,7 @@ java_library(
     visibility = ["//visibility:public"],
     exports = [
         ":m2-dsl-graph-pure-boot",
+        ":platform_dsl_graph_metadata_lib",
     ],
     deps = [
         ":m2-dsl-graph-pure-boot",
@@ -48,7 +49,22 @@ java_library(
         "//legend-pure/legend-pure-core/legend-pure-m4",
         "@legend_maven//:org_eclipse_collections_eclipse_collections",
         "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+        ":platform_dsl_graph_metadata_lib",
     ],
+)
+
+java_library(
+    name = "platform_dsl_graph_metadata_lib",
+    resources = [":platform_dsl_graph_metadata"],
+    resource_strip_prefix = "legend-pure/legend-pure-dsl/legend-pure-dsl-graph/legend-pure-m2-dsl-graph-pure",
+    visibility = ["//visibility:public"],
+)
+
+genrule(
+    name = "platform_dsl_graph_metadata",
+    outs = ["metadata/specs/platform_dsl_graph.json"],
+    cmd = "mkdir -p $$(dirname $@) && echo '{\"name\": \"platform_dsl_graph\", \"dependencies\": [\"platform\"]}' > $@",
+    visibility = ["//visibility:public"],
 )
 
 java_binary(
@@ -73,5 +89,40 @@ java_library(
     name = "pure_platform_dsl_graph_par_lib",
     resource_strip_prefix = "legend-pure/legend-pure-dsl/legend-pure-dsl-graph/legend-pure-m2-dsl-graph-pure",
     resources = [":pure-platform_dsl_graph.par"],
+    visibility = ["//visibility:public"],
+)
+
+java_binary(
+    name = "compiled_metadata_generator",
+    main_class = "org.finos.legend.pure.runtime.java.compiled.generation.orchestrator.JavaCodeGeneration",
+    runtime_deps = [
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        ":legend-pure-m2-dsl-graph-pure",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+genrule(
+    name = "platform_dsl_graph_compiled_graph",
+    srcs = glob(["src/main/resources/**/*"]),
+    outs = ["platform_dsl_graph_compiled_metadata.jar"],
+    tools = [":compiled_metadata_generator"],
+    cmd = """
+    mkdir -p $(@D)/graph_gen_out
+    mkdir -p $(@D)/graph_classes_out
+    export JAVA_OPTS="-Dpure.usePar=false"
+    $(location :compiled_metadata_generator) \
+        platform_dsl_graph \
+        $(@D)/graph_classes_out \
+        $(@D)/graph_gen_out
+
+    jar cf $@ -C $(@D)/graph_classes_out metadata
+    """,
+    visibility = ["//visibility:public"],
+)
+
+java_import(
+    name = "platform_dsl_graph_compiled_graph_import",
+    jars = [":platform_dsl_graph_compiled_metadata.jar"],
     visibility = ["//visibility:public"],
 )

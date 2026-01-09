@@ -1,8 +1,7 @@
 load("@rules_java//java:defs.bzl", "java_binary", "java_library")
 load("@rules_java//java:java_import.bzl", "java_import")
 load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_java_code_gen", "pure_pct_report")
-load("//tools/build_rules:java_model_generation.bzl", "java_model_generation")
-load("//tools/build_rules:java_partition.bzl", "partitioned_java_library")
+load("//tools/build_rules:legend_java_library.bzl", "legend_java_library")
 
 java_library(
     name = "engine_deps",
@@ -446,46 +445,65 @@ java_library(
     visibility = ["//visibility:public"],
 )
 
-java_model_generation(
+legend_java_library(
     name = "core_gen",
-    factory_class = "org.finos.legend.pure.m3.serialization.grammar.m3parser.antlr.M3AntlrParser",
     model_name = "Core",
-    tool = ":JavaModelFactoryGenerator",
-)
-
-genrule(
-    name = "platform_merged_src",
+    model_factory_class = "org.finos.legend.pure.m3.serialization.grammar.m3parser.antlr.M3AntlrParser",
     srcs = [
-        ":platform_src.srcjar",
         "src/main/java/org/finos/legend/pure/generated/CoreGen.java",
         "src/main/java/org/finos/legend/pure/generated/Root_meta_pure_functions_lang_KeyValue.java",
         "src/main/java/org/finos/legend/pure/generated/Root_meta_pure_functions_lang_KeyValue_Impl.java",
     ],
-    outs = ["platform_merged.srcjar"],
-    cmd = """
-        cp $(location :platform_src.srcjar) $@
-        chmod +w $@
-        src_root="legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/main/java"
-        out_abs=$$(pwd)/$@
-        pushd $$src_root > /dev/null
-        jar -uf $$out_abs org/finos/legend/pure/generated/CoreGen.java org/finos/legend/pure/generated/Root_meta_pure_functions_lang_KeyValue.java org/finos/legend/pure/generated/Root_meta_pure_functions_lang_KeyValue_Impl.java
-        popd > /dev/null
-    """,
+    model_exclusions = [
+        "org/finos/legend/pure/generated/Root_meta_pure_functions_lang_KeyValue_Impl.java",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":compiled_engine_boot",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "@legend_maven//:com_googlecode_json_simple_json_simple",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+    javacopts = [
+        "-Xep:IdentityBinaryExpression:OFF",
+        "-Xep:IsInstanceIncompatibleType:OFF",
+        "-Xep:ComparableType:OFF",
+        "-Xep:SelfEquals:OFF",
+    ],
 )
 
-partitioned_java_library(
+legend_java_library(
     name = "compiled_engine_generated",
-    src = ":platform_merged.srcjar",
+    pure_repository = "platform",
+    pure_generator = ":JavaCodeGeneration",
+    include_metadata = True,
+    src_root = "legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/main/java",
+    pure_exclusions = [
+        "org/finos/legend/pure/generated/Root_meta_pure_functions_lang_KeyValue.java",
+        "org/finos/legend/pure/generated/Root_meta_pure_functions_lang_KeyValue_Impl.java",
+        "org/finos/legend/pure/generated/Root_meta_pure_functions_lang_KeyValue_LazyImpl.java",
+    ],
+    deps = [
+        ":compiled_engine_boot",
+        ":engine_deps",
+        ":core_gen",
+    ],
+    layers = 10,
+    shards = 8,
     javacopts = [
         "-Xep:IdentityBinaryExpression:OFF",
         "-Xep:IsInstanceIncompatibleType:OFF",
         "-Xep:ComparableType:OFF",
     ],
     visibility = ["//visibility:private"],
-    deps = [
-        ":compiled_engine_boot",
-        ":engine_deps",
-    ],
+)
+
+alias(
+    name = "platform_metadata",
+    actual = ":compiled_engine_generated_metadata",
+    visibility = ["//visibility:public"],
 )
 
 java_library(
@@ -494,33 +512,9 @@ java_library(
     exports = [
         ":compiled_engine_boot",
         ":compiled_engine_generated",
+        ":core_gen",
         ":engine_deps",
     ],
 )
 
-pure_java_code_gen(
-    name = "platform_src",
-    exclusions = [
-        "org/finos/legend/pure/generated/CoreGen.java",
-        "org/finos/legend/pure/generated/Root_meta_pure_functions_lang_KeyValue_Impl.java",
-    ],
-    metadata_jar = "platform_metadata.jar",
-    repository = "platform",
-    tool = ":JavaCodeGeneration",
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "generate_platform_engine",
-    srcs = [
-        ":platform_metadata.jar",
-        ":platform_src",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-java_import(
-    name = "platform_metadata",
-    jars = [":platform_metadata.jar"],
-    visibility = ["//visibility:public"],
-)
+# platform_metadata is now an alias above
