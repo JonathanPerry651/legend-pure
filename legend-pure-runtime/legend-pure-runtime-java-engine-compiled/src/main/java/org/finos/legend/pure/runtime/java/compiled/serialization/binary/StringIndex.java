@@ -72,6 +72,14 @@ public abstract class StringIndex extends StringCacheOrIndex
     protected static String[] readClassifierIds(Reader reader)
     {
         String[] strings = reader.readStringArray();
+        System.out.println("DEBUG: StringIndex read " + strings.length + " classifier IDs.");
+        for (String s : strings)
+        {
+            if (s.contains("FunctionType"))
+            {
+                System.out.println("DEBUG: Found classifier ID: " + s);
+            }
+        }
         for (int i = 0; i < strings.length; i++)
         {
             strings[i] = strings[i].intern();

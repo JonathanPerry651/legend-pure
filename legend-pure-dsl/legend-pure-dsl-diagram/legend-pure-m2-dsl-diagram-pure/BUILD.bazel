@@ -1,6 +1,7 @@
 load("@rules_java//java:java_binary.bzl", "java_binary")
 load("@rules_java//java:java_library.bzl", "java_library")
 load("//tools/build_rules:pure_generation.bzl", "pure_model_generation")
+load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_par")
 
 java_library(
     name = "m2-dsl-diagram-pure-boot",
@@ -67,6 +68,31 @@ genrule(
 )
 
 java_binary(
+    name = "PureJarGenerator",
+    main_class = "org.finos.legend.pure.m3.generator.par.PureJarGenerator",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        ":m2-dsl-diagram-pure-boot",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+    ],
+)
+
+pure_par(
+    name = "pure_platform_dsl_diagram_par",
+    out = "pure-platform_dsl_diagram.par",
+    repo_name = "platform_dsl_diagram",
+    tool = ":PureJarGenerator",
+    visibility = ["//visibility:public"],
+)
+
+java_library(
+    name = "pure_platform_dsl_diagram_par_lib",
+    resource_strip_prefix = "legend-pure/legend-pure-dsl/legend-pure-dsl-diagram/legend-pure-m2-dsl-diagram-pure",
+    resources = [":pure-platform_dsl_diagram.par"],
+    visibility = ["//visibility:public"],
+)
+
+java_binary(
     name = "compiled_metadata_generator",
     main_class = "org.finos.legend.pure.runtime.java.compiled.generation.orchestrator.JavaCodeGeneration",
     runtime_deps = [
@@ -76,22 +102,14 @@ java_binary(
     visibility = ["//visibility:public"],
 )
 
-genrule(
+load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_compiled_metadata_gen")
+
+pure_compiled_metadata_gen(
     name = "platform_dsl_diagram_compiled_graph",
     srcs = glob(["src/main/resources/**/*"]),
-    outs = ["platform_dsl_diagram_compiled_metadata.jar"],
-    tools = [":compiled_metadata_generator"],
-    cmd = """
-    mkdir -p $(@D)/diagram_gen_out
-    mkdir -p $(@D)/diagram_classes_out
-    export JAVA_OPTS="-Dpure.usePar=false"
-    $(location :compiled_metadata_generator) \
-        platform_dsl_diagram \
-        $(@D)/diagram_classes_out \
-        $(@D)/diagram_gen_out
-
-    jar cf $@ -C $(@D)/diagram_classes_out metadata
-    """,
+    out = "platform_dsl_diagram_compiled_metadata.jar",
+    module_name = "platform_dsl_diagram",
+    tool = ":compiled_metadata_generator",
     visibility = ["//visibility:public"],
 )
 

@@ -6,7 +6,22 @@ java_binary(
     visibility = ["//visibility:private"],
     runtime_deps = [
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-tds/legend-pure-m2-dsl-tds-grammar",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-tds/legend-pure-m2-dsl-tds-pure",
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+    ],
+)
+
+java_binary(
+    name = "JavaCodeGeneration_TDS",
+    main_class = "org.finos.legend.pure.runtime.java.compiled.generation.orchestrator.JavaCodeGeneration",
+    visibility = ["//visibility:private"],
+    runtime_deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-tds/legend-pure-m2-dsl-tds-pure",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
     ],
 )
 
@@ -21,6 +36,7 @@ legend_java_library(
     javacopts = [
         "-Xep:IdentityBinaryExpression:OFF",
         "-Xep:IsInstanceIncompatibleType:OFF",
+        "-Xep:ComparableType:OFF",
     ],
     resources = glob(["src/main/resources/**/*"]),
     visibility = ["//visibility:public"],
@@ -29,6 +45,8 @@ legend_java_library(
         "//legend-pure/legend-pure-core/legend-pure-m4",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-tds/legend-pure-m2-dsl-tds-grammar",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-tds/legend-pure-m2-dsl-tds-pure",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-tds/legend-pure-m2-dsl-tds-pure:pure_platform_dsl_tds_par_lib",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-tds/legend-pure-m2-dsl-tds-pure:platform_dsl_tds_compiled_graph_import",
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
         "@legend_maven//:org_eclipse_collections_eclipse_collections",
         "@legend_maven//:org_eclipse_collections_eclipse_collections_api",

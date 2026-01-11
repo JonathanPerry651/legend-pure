@@ -127,22 +127,14 @@ java_binary(
     visibility = ["//visibility:public"],
 )
 
-genrule(
+load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_compiled_metadata_gen")
+
+pure_compiled_metadata_gen(
     name = "platform_store_relational_compiled_graph",
     srcs = glob(["src/main/resources/**/*"]),
-    outs = ["platform_store_relational_compiled_metadata.jar"],
-    tools = [":compiled_metadata_generator"],
-    cmd = """
-    mkdir -p $(@D)/relational_gen_out
-    mkdir -p $(@D)/relational_classes_out
-    export JAVA_OPTS="-Dpure.usePar=false"
-    $(location :compiled_metadata_generator) \
-        platform_store_relational \
-        $(@D)/relational_classes_out \
-        $(@D)/relational_gen_out
-
-    jar cf $@ -C $(@D)/relational_classes_out metadata
-    """,
+    out = "platform_store_relational_compiled_metadata.jar",
+    module_name = "platform_store_relational",
+    tool = ":compiled_metadata_generator",
     visibility = ["//visibility:public"],
 )
 

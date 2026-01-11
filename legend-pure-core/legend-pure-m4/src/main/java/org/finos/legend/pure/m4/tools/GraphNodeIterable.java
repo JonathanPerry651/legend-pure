@@ -295,7 +295,7 @@ public class GraphNodeIterable extends AbstractLazySpliterable<CoreInstance>
                     GraphWalkFilterResult filterResult = filterNode(node);
                     if (filterResult.shouldContinue())
                     {
-                        node.getKeys().forEach(key ->
+                        node.getKeys().toSortedList().forEach(key ->
                         {
                             if (this.keyFilter.test(node, key))
                             {

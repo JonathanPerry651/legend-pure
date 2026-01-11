@@ -38,6 +38,7 @@ legend_java_library(
     pure_srcs = ["//legend-pure/legend-pure-dsl/legend-pure-dsl-mapping/legend-pure-m2-dsl-mapping-pure:pure_platform_dsl_mapping_par_lib"],
     pure_generator = ":JavaCodeGeneration_Mapping",
     model_name = "Mapping",
+    include_metadata = True,
     model_factory_class = "org.finos.legend.pure.m2.dsl.mapping.serialization.grammar.v1.MappingParser,org.finos.legend.pure.m2.dsl.mapping.serialization.grammar.v1.OperationParser,org.finos.legend.pure.m2.dsl.mapping.serialization.grammar.v1.EnumerationMappingParser,org.finos.legend.pure.m2.dsl.mapping.serialization.grammar.v1.AggregationAwareParser",
     model_inclusions = ["org/finos/legend/pure/generated/MappingJavaModelFactoryRegistry.java"],
     model_generator = ":JavaModelFactoryGenerator_Mapping",

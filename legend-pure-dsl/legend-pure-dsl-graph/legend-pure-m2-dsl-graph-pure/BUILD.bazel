@@ -102,22 +102,14 @@ java_binary(
     visibility = ["//visibility:public"],
 )
 
-genrule(
+load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_compiled_metadata_gen")
+
+pure_compiled_metadata_gen(
     name = "platform_dsl_graph_compiled_graph",
     srcs = glob(["src/main/resources/**/*"]),
-    outs = ["platform_dsl_graph_compiled_metadata.jar"],
-    tools = [":compiled_metadata_generator"],
-    cmd = """
-    mkdir -p $(@D)/graph_gen_out
-    mkdir -p $(@D)/graph_classes_out
-    export JAVA_OPTS="-Dpure.usePar=false"
-    $(location :compiled_metadata_generator) \
-        platform_dsl_graph \
-        $(@D)/graph_classes_out \
-        $(@D)/graph_gen_out
-
-    jar cf $@ -C $(@D)/graph_classes_out metadata
-    """,
+    out = "platform_dsl_graph_compiled_metadata.jar",
+    module_name = "platform_dsl_graph",
+    tool = ":compiled_metadata_generator",
     visibility = ["//visibility:public"],
 )
 

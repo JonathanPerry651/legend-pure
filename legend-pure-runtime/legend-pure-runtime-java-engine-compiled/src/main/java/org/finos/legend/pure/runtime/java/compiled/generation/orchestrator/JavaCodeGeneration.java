@@ -54,17 +54,6 @@ public class JavaCodeGeneration
 {
     public static void main(String... args)
     {
-        System.out.println("DEBUG: Classpath: " + System.getProperty("java.class.path"));
-        try {
-             Class.forName("org.finos.legend.pure.m3.coreinstance.meta.core.runtime.Connection");
-             System.out.println("DEBUG: Connection class FOUND");
-        } catch (ClassNotFoundException e) {
-             System.out.println("DEBUG: Connection class NOT FOUND");
-        }
-        
-        System.out.println("DEBUG: Extension detail:");
-        org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtensionLoader.extensions().forEach(e -> System.out.println("  Extension: " + e.getClass().getName()));
-        
         Log log = new Log()
         {
             @Override
@@ -106,7 +95,7 @@ public class JavaCodeGeneration
                     Sets.mutable.with(args[0]),
                     Sets.mutable.empty(),
                     Sets.mutable.empty(),
-                    GenerationType.modular,
+                    "platform".equals(args[0]) ? GenerationType.monolithic : GenerationType.modular,
                     false,
                     false,
                     args.length == 4 ? args[3] : "",

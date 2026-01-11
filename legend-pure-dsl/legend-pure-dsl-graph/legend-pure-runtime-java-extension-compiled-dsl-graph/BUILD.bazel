@@ -1,5 +1,19 @@
 load("//tools/build_rules:legend_java_library.bzl", "legend_java_library")
 
+java_binary(
+    name = "JavaCodeGeneration_Graph",
+    main_class = "org.finos.legend.pure.runtime.java.compiled.generation.orchestrator.JavaCodeGeneration",
+    visibility = ["//visibility:private"],
+    runtime_deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-graph/legend-pure-m2-dsl-graph-pure",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+)
+
 legend_java_library(
     name = "legend-pure-runtime-java-extension-compiled-dsl-graph",
     src_root = "legend-pure/legend-pure-dsl/legend-pure-dsl-graph/legend-pure-runtime-java-extension-compiled-dsl-graph/src/main/java",
@@ -7,8 +21,15 @@ legend_java_library(
     model_name = "Graph",
     model_factory_class = "org.finos.legend.pure.m2.inlinedsl.graph.antlr.GraphDSL",
     model_srcs = ["//legend-pure/legend-pure-dsl/legend-pure-dsl-graph/legend-pure-m2-dsl-graph-pure:pure_gen"],
+    pure_srcs = ["//legend-pure/legend-pure-dsl/legend-pure-dsl-graph/legend-pure-m2-dsl-graph-pure:pure_platform_dsl_graph_par_lib"],
+    pure_repository = "platform_dsl_graph",
+    pure_generator = ":JavaCodeGeneration_Graph",
+    include_metadata = True,
+
+
     javacopts = [
         "-Xep:IdentityBinaryExpression:OFF",
+        "-Xep:ComparableType:OFF",
         "-Xep:IsInstanceIncompatibleType:OFF",
     ],
     resources = glob(["src/main/resources/**/*"]),

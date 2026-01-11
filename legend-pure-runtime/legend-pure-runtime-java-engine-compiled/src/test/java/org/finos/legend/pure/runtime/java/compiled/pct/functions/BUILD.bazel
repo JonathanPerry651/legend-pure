@@ -5,7 +5,7 @@ java_test(
     srcs = ["TestCoreFunctions.java"],
     test_class = "org.finos.legend.pure.runtime.java.compiled.pct.functions.TestCoreFunctions",
     deps = [
-        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
+
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:platform_metadata",
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime:CompiledClassloaderStateVerifier_lib",
@@ -17,10 +17,12 @@ java_test(
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/binary:TestDistributedBinaryGraphSerialization_lib",
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/binary:TestStringCaching_lib",
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/model:TestObj_lib",
+        "//legend-engine/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-compiled-core",
         "@legend_maven//:junit_junit",
         "@legend_maven//:org_eclipse_collections_eclipse_collections",
         "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
         "@legend_maven//:org_eclipse_collections_eclipse_collections_testutils",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
     ],
 )
 
@@ -65,6 +67,7 @@ java_test(
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/binary:TestDistributedBinaryGraphSerialization_lib",
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/binary:TestStringCaching_lib",
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled/src/test/java/org/finos/legend/pure/runtime/java/compiled/runtime/serialization/model:TestObj_lib",
+        "//legend-engine/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-compiled-core",
         "@legend_maven//:junit_junit",
         "@legend_maven//:org_eclipse_collections_eclipse_collections",
         "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
@@ -105,6 +108,7 @@ java_library(
         "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:compiled_engine_boot",
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:platform_metadata",
+        "//legend-engine/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-compiled-core",
         "@legend_maven//:junit_junit",
         "@legend_maven//:org_eclipse_collections_eclipse_collections",
         "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
@@ -135,6 +139,7 @@ java_library(
         "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-test-utils",
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:compiled_engine_boot",
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:platform_metadata",
+        "//legend-engine/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-compiled-core",
         "@legend_maven//:junit_junit",
         "@legend_maven//:org_eclipse_collections_eclipse_collections",
         "@legend_maven//:org_eclipse_collections_eclipse_collections_api",

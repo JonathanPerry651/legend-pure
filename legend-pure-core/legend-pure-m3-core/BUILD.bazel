@@ -2,13 +2,17 @@ load("@rules_java//java:defs.bzl", "java_library")
 load("@rules_java//java:java_binary.bzl", "java_binary")
 load(":pure.bzl", "PURE_PLATFORM_VERSION", "pure_antlr_gen", "pure_generator", "pure_par", "pure_pct_report")
 
-# ... (existing content)
-
 # 2b. Platform Properties Generation
 genrule(
     name = "platform_properties_gen",
     outs = ["org/finos/legend/pure/platform.properties"],
     cmd = "echo 'version=%s' > $(location org/finos/legend/pure/platform.properties)" % PURE_PLATFORM_VERSION,
+)
+
+filegroup(
+    name = "platform_pure_srcs",
+    srcs = glob(["src/main/resources/**/*.pure"]),
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -64,7 +68,6 @@ pure_antlr_gen(
     visibility = ["//visibility:public"],
 )
 
-# 2. Bootstrap Generator
 # 2. Bootstrap Generator
 pure_generator(
     name = "bootstrap_gen",
@@ -382,17 +385,14 @@ genrule(
     cmd = "unzip -l $(location :platform_par) > $(OUTS)",
 )
 
-java_import(
-    name = "platform_par_java_import",
-    jars = [":pure-platform.par"],
-    visibility = ["//visibility:public"],
-)
+
 
 genrule(
     name = "platform_compiled_graph",
     srcs = glob(["src/main/resources/**/*.pure"]),
     outs = ["platform_compiled_metadata.jar"],
     tools = ["//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled:JavaCodeGeneration"],
+    toolchains = ["@bazel_tools//tools/jdk:current_java_runtime"],
     cmd = """
     mkdir -p $(@D)/platform_gen_out
     mkdir -p $(@D)/platform_classes_out
@@ -402,7 +402,7 @@ genrule(
         $(@D)/platform_classes_out \
         $(@D)/platform_gen_out
 
-    jar cf $@ -C $(@D)/platform_classes_out metadata
+    $(JAVABASE)/bin/jar cf $@ -C $(@D)/platform_classes_out metadata
     """,
     visibility = ["//visibility:public"],
 )

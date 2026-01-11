@@ -314,9 +314,10 @@ def _pure_java_code_gen_impl(ctx):
 
     tool_output = ctx.actions.declare_file(ctx.label.name + "_tool_output.txt")
 
+    tool_runfiles = ctx.attr.tool[DefaultInfo].default_runfiles.files
     ctx.actions.run_shell(
         outputs = [classes_dir, target_dir, tool_output],
-        inputs = srcs,
+        inputs = srcs + tool_runfiles.to_list(),
         tools = [tool],
         command = "{tool_path} $1 $2 $3 > {out} 2>&1 || (cat {out} && exit 1)".format(
             tool_path = tool.path,
@@ -469,7 +470,7 @@ def _pure_jar_filter_impl(ctx):
     ctx.actions.run_shell(
         inputs = [src_jar],
         outputs = [filtered_dir],
-        tools = [jar_tool],
+        tools = ctx.attr._jar[java_common.JavaRuntimeInfo].files,
         arguments = [args],
         command = """
             set -e
@@ -609,7 +610,7 @@ for root, dirs, files in os.walk(extract_root):
     ctx.actions.run(
         inputs = [src_jar, script_file],
         outputs = [extract_dir, filtered_dir],
-        tools = [jar_tool],
+        tools = ctx.attr._jar[java_common.JavaRuntimeInfo].files,
         executable = "python3",
         arguments = [script_file.path, src_jar.path, extract_dir.path, filtered_dir.path, jar_tool.path] + include_patterns,
         mnemonic = "PureJarExtract",
@@ -635,4 +636,78 @@ pure_jar_extract = rule(
         "_jar": attr.label(default = Label("@bazel_tools//tools/jdk:current_java_runtime"), providers = [java_common.JavaRuntimeInfo]),
     },
     outputs = {"jar": "%{name}.srcjar"},
+)
+
+def _pure_compiled_metadata_gen_impl(ctx):
+    # Inputs
+    srcs = ctx.files.srcs
+    tool = ctx.executable.tool
+    output = ctx.outputs.out
+    module_name = ctx.attr.module_name
+
+    # Intermediate directories
+    gen_dir = ctx.actions.declare_directory(ctx.label.name + "_gen_out")
+    classes_dir = ctx.actions.declare_directory(ctx.label.name + "_classes_out")
+
+    # Discovery of jar tool
+    jar_tool = None
+    for f in ctx.attr._jar[java_common.JavaRuntimeInfo].files.to_list():
+        if f.basename == "jar":
+            jar_tool = f
+            break
+    if not jar_tool:
+        fail("jar tool not found in java_runtime")
+
+    # Construct the command
+    # export JAVA_OPTS="-Dpure.usePar=false"
+    # tool module_name classes_dir gen_dir
+    # jar cf output -C classes_dir metadata
+
+    # We need to pass the runfiles of the tool
+    # The tool is an executable, so we run it using ctx.actions.run or run_shell
+    # run_shell is easier to combine with jar command, but we need to handle runfiles manually or use the tool input
+    
+    # Using run_shell with tools=[tool] puts the tool in the runfiles tree or accessible path
+    
+    cmd = """
+    set -e
+    mkdir -p {gen_dir}
+    mkdir -p {classes_dir}
+    export JAVA_OPTS="-Dpure.usePar=false"
+    
+    {tool_path} {module_name} {classes_dir} {gen_dir}
+    
+    {jar_path} cf {output} -C {classes_dir} metadata
+    """.format(
+        gen_dir = gen_dir.path,
+        classes_dir = classes_dir.path,
+        tool_path = tool.path,
+        module_name = module_name,
+        jar_path = jar_tool.path,
+        output = output.path,
+    )
+
+    tool_runfiles = ctx.attr.tool[DefaultInfo].default_runfiles.files
+    ctx.actions.run_shell(
+        inputs = srcs + tool_runfiles.to_list(),
+        outputs = [output, gen_dir, classes_dir],
+        tools = [tool] + ctx.attr._jar[java_common.JavaRuntimeInfo].files.to_list(),
+        command = cmd,
+        mnemonic = "PureCompiledMetadataGen",
+    )
+
+    return [DefaultInfo(files = depset([output]))]
+
+pure_compiled_metadata_gen = rule(
+    implementation = _pure_compiled_metadata_gen_impl,
+    attrs = {
+        "srcs": attr.label_list(allow_files = True),
+        "module_name": attr.string(mandatory = True),
+        "tool": attr.label(mandatory = True, executable = True, cfg = "exec"),
+        "out": attr.output(mandatory = True),
+        "_jar": attr.label(
+            default = Label("@bazel_tools//tools/jdk:current_java_runtime"),
+            providers = [java_common.JavaRuntimeInfo],
+        ),
+    },
 )

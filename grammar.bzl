@@ -22,16 +22,33 @@ def _antlr_gen_impl(ctx):
     srcs = ctx.files.srcs
     tool = ctx.executable.tool
 
-    # 1. Create Lib Dir components using symlinks
-    lib_files = []
-    lib_dir_path = ctx.label.name + "_lib"
-
-    for f in srcs:
-        symlink_out = ctx.actions.declare_file(lib_dir_path + "/" + f.basename)
-        ctx.actions.symlink(output = symlink_out, target_file = f)
-        lib_files.append(symlink_out)
-
-    # Filter sources
+    # 1. Create Lib Dir as a Tree Artifact
+    lib_dir = ctx.actions.declare_directory(ctx.label.name + "_lib")
+    
+    # We need to structure the lib dir. 
+    # Since we can't easily symlink a list of files into a directory artifact in Starlark without a custom action:
+    pkg_struct_args = ctx.actions.args()
+    pkg_struct_args.add_all([lib_dir], expand_directories = False)
+    pkg_struct_args.add_all(srcs)
+    
+    ctx.actions.run_shell(
+        outputs = [lib_dir],
+        inputs = srcs,
+        command = """
+            set -e
+            out_dir="$1"
+            shift
+            mkdir -p "$out_dir"
+            for f in "$@"; do
+                cp "$f" "$out_dir/"
+            done
+        """,
+        arguments = [pkg_struct_args],
+        mnemonic = "SetupAntlrLib",
+        execution_requirements = {"supports-path-mapping": "1"},
+    )
+    
+    # Filter sources (we still need to know which is which, but we use the original srcs list for filtering)
     lexers = []
     parsers = []
 
@@ -56,33 +73,52 @@ def _antlr_gen_impl(ctx):
         out_dir = ctx.actions.declare_directory(ctx.label.name + "_lexer_out_" + lexer.basename)
         all_gen_dirs.append(out_dir)
 
+        args = ctx.actions.args()
+        args.add(tool)
+        args.add_all([out_dir], expand_directories = False)
+        args.add(rel_dir)
+        args.add_all([lib_dir], expand_directories = False)
+        args.add(lexer.basename)
+        args.add(package)
+        
         ctx.actions.run_shell(
             outputs = [out_dir],
-            inputs = lib_files + [lexer],
+            inputs = [lib_dir, lexer], # lexer is still needed individually? Or should we find it in lib_dir? 
+            # We can pass lexer as input so Bazel knows, but tool command uses lib_dir for -lib. 
+            # The grammar file itself is passed as argument "$grammar_base", which is just filename.
+            # ANTLR looks for it in "." (current dir) or -lib path? 
+            # Script does `cd "$grammar_dir"`. 
+            # We need to adjust script to use lib_dir.
             tools = [tool],
             command = """
                 set -e
-                tool_abs="$(pwd)/$1"
-                out_root_abs="$(pwd)/$2"
+                tool_path="$1"
+                out_root_path="$2"
                 rel_dir="$3"
                 grammar_dir="$4"
                 grammar_base="$5"
                 package="$6"
                 
-                out_dir_abs="$out_root_abs/$rel_dir"
+                # Resolve absolute paths before changing directory
+                if [[ "$tool_path" != /* ]]; then tool_path="$(pwd)/$tool_path"; fi
+                if [[ "$out_root_path" != /* ]]; then out_root_path="$(pwd)/$out_root_path"; fi
+                if [[ "$grammar_dir" != /* ]]; then grammar_dir="$(pwd)/$grammar_dir"; fi
+                
+                out_dir_abs="$out_root_path/$rel_dir"
                 mkdir -p "$out_dir_abs"
                 
                 cd "$grammar_dir"
-                "$tool_abs" -o "$out_dir_abs" -package "$package" -visitor -listener -lib . "$grammar_base"
+                "$tool_path" -o "$out_dir_abs" -package "$package" -visitor -listener -lib . "$grammar_base"
                 
-                if [ -z "$(find "$out_root_abs" -type f)" ]; then
-                    echo "ERROR: ANTLR Lexer produced no files in $out_root_abs"
+                if [ -z "$(find "$out_root_path" -type f)" ]; then
+                    echo "ERROR: ANTLR Lexer produced no files in $out_root_path"
                     exit 1
                 fi
             """,
-            arguments = [tool.path, out_dir.path, rel_dir, lib_files[0].dirname, lexer.basename, package],
+            arguments = [args],
             mnemonic = "AntlrLexer",
             progress_message = "Generating ANTLR lexer for %s" % lexer.short_path,
+            execution_requirements = {"supports-path-mapping": "1"},
         )
 
         generated_tokens.append(out_dir)
@@ -90,8 +126,13 @@ def _antlr_gen_impl(ctx):
     # 3. Update Lib with Tokens (Phase 2)
     lib_phase2_dir = ctx.actions.declare_directory(ctx.label.name + "_lib_phase2")
 
+    args_phase2 = ctx.actions.args()
+    args_phase2.add_all([lib_phase2_dir], expand_directories = False)
+    args_phase2.add_all([lib_dir], expand_directories = False)
+    args_phase2.add_all(generated_tokens)
+
     ctx.actions.run_shell(
-        inputs = lib_files + generated_tokens,
+        inputs = [lib_dir] + generated_tokens,
         outputs = [lib_phase2_dir],
         command = """
             set -e
@@ -105,8 +146,9 @@ def _antlr_gen_impl(ctx):
                 find "$token_dir" -name '*.tokens' -exec cp {} "$dest_lib"/ \\;
             done
         """,
-        arguments = [lib_phase2_dir.path, lib_files[0].dirname] + [d.path for d in generated_tokens],
+        arguments = [args_phase2],
         mnemonic = "SetupAntlrLibPhase2",
+        execution_requirements = {"supports-path-mapping": "1"},
     )
 
     # 4. Compile Parsers
@@ -117,34 +159,51 @@ def _antlr_gen_impl(ctx):
         out_dir = ctx.actions.declare_directory(ctx.label.name + "_parser_out_" + parser.basename)
         all_gen_dirs.append(out_dir)
 
+        args_parser = ctx.actions.args()
+        args_parser.add(tool)
+        args_parser.add_all([out_dir], expand_directories = False)
+        args_parser.add(rel_dir)
+        args_parser.add_all([lib_phase2_dir], expand_directories = False)
+        args_parser.add_all([lib_phase2_dir], expand_directories = False) # grammar_dir
+        args_parser.add(parser.basename)
+        args_parser.add(package)
+        
         ctx.actions.run_shell(
             outputs = [out_dir],
             inputs = [lib_phase2_dir],
             tools = [tool],
             command = """
                 set -e
-                tool_abs="$(pwd)/$1"
-                out_root_abs="$(pwd)/$2"
+                tool_path="$1"
+                out_root_path="$2"
                 rel_dir="$3"
-                lib_phase2_abs="$(pwd)/$4"
+                lib_phase2_path="$4"
                 grammar_dir="$5"
                 grammar_base="$6"
                 package="$7"
                 
-                out_dir_abs="$out_root_abs/$rel_dir"
+                # Resolve absolute paths
+                if [[ "$tool_path" != /* ]]; then tool_path="$(pwd)/$tool_path"; fi
+                if [[ "$out_root_path" != /* ]]; then out_root_path="$(pwd)/$out_root_path"; fi
+                if [[ "$lib_phase2_path" != /* ]]; then lib_phase2_path="$(pwd)/$lib_phase2_path"; fi
+                if [[ "$grammar_dir" != /* ]]; then grammar_dir="$(pwd)/$grammar_dir"; fi
+                
+                out_dir_abs="$out_root_path/$rel_dir"
                 mkdir -p "$out_dir_abs"
                 
                 cd "$grammar_dir"
-                "$tool_abs" -o "$out_dir_abs" -package "$package" -visitor -listener -lib "$lib_phase2_abs" "$grammar_base"
+                # -lib expects the directory containing tokens. 
+                "$tool_path" -o "$out_dir_abs" -package "$package" -visitor -listener -lib "$lib_phase2_path" "$grammar_base"
                 
-                if [ -z "$(find "$out_root_abs" -type f)" ]; then
-                    echo "ERROR: ANTLR Parser produced no files in $out_root_abs"
+                if [ -z "$(find "$out_root_path" -type f)" ]; then
+                    echo "ERROR: ANTLR Parser produced no files in $out_root_path"
                     exit 1
                 fi
             """,
-            arguments = [tool.path, out_dir.path, rel_dir, lib_phase2_dir.path, lib_phase2_dir.path, parser.basename, package],
+            arguments = [args_parser],
             mnemonic = "AntlrParser",
             progress_message = "Generating ANTLR parser for %s" % parser.short_path,
+            execution_requirements = {"supports-path-mapping": "1"},
         )
 
     # 5. Package results

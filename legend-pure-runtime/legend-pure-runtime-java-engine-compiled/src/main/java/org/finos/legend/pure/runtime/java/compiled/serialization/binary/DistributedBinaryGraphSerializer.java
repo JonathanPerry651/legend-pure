@@ -297,7 +297,7 @@ public abstract class DistributedBinaryGraphSerializer
 
     protected class SerializationCollector
     {
-        private final MutableMap<String, MutableList<CoreInstance>> instancesForSerialization = Maps.mutable.empty();
+        public final MutableMap<String, MutableList<CoreInstance>> instancesForSerialization = Maps.mutable.empty();
         private final MutableMap<String, MutableList<Obj>> objUpdates = Maps.mutable.empty();
 
         public void collectInstanceForSerialization(CoreInstance instance)

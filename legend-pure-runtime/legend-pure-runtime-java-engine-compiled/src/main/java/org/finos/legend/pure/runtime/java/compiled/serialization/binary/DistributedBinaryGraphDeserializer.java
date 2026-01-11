@@ -540,6 +540,7 @@ public abstract class DistributedBinaryGraphDeserializer
         private MapIterable<String, SourceCoordinates> readInstanceIndex(String classifier)
         {
             String indexFilePath = DistributedMetadataHelper.getMetadataClassifierIndexFilePath(this.metadataName, classifier);
+            System.out.println("DEBUG: Reading index for " + classifier + " from " + indexFilePath + " (metadata: " + this.metadataName + ")");
             try (Reader reader = this.fileReader.getReader(indexFilePath))
             {
                 int instanceCount = reader.readInt();
@@ -681,6 +682,7 @@ public abstract class DistributedBinaryGraphDeserializer
             }
             if (throwIfNotFound)
             {
+                System.out.println("DEBUG: UnknownInstanceException for " + classifierId + " / " + instanceId + ". Available deserializers: " + this.deserializers.collect(d -> String.valueOf(d.metadataName)).makeString(", "));
                 throw new UnknownInstanceException(classifierId, instanceId);
             }
             return null;

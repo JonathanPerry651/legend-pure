@@ -27,6 +27,10 @@ legend_java_library(
     name = "java_gen",
     srcs = ["//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure:pure_gen"],
     model_name = "Store",
+    pure_srcs = ["//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure:pure_platform_dsl_store_par_lib"],
+    pure_repository = "platform_dsl_store",
+    pure_generator = ":JavaCodeGeneration_Store",
+    include_metadata = True,
     model_factory_class = "org.finos.legend.pure.m2.inlinedsl.store.RelationStoreAccessor",
     model_generator = ":JavaModelFactoryGenerator_Store",
     visibility = ["//visibility:private"],
@@ -128,6 +132,7 @@ java_library(
         "@legend_maven//:org_eclipse_collections_eclipse_collections",
         "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
         ":m3-store-extension-lib",
+        ":java_gen_metadata",
     ],
 )
 

@@ -14,7 +14,10 @@
 
 package org.finos.legend.pure.runtime.java.compiled.serialization.binary;
 
+import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
 import org.finos.legend.pure.m3.coreinstance.helper.AnyStubHelper;
 import org.finos.legend.pure.m3.navigation.PrimitiveUtilities;
@@ -37,16 +40,42 @@ class DistributedBinaryFullGraphSerializer extends DistributedBinaryGraphSeriali
         MutableSet<CoreInstance> primitiveTypes = PrimitiveUtilities.getPrimitiveTypes(this.processorSupport).toSet();
         GraphNodeIterable.fromModelRepository(this.runtime.getModelRepository(), instance ->
         {
-            CoreInstance classifier = instance.getClassifier();
-            if (stubClassifiers.contains(classifier))
+            if (stubClassifiers.contains(instance.getClassifier()))
             {
                 return GraphWalkFilterResult.REJECT_AND_CONTINUE;
             }
-            if (primitiveTypes.contains(classifier))
+            if (primitiveTypes.contains(instance.getClassifier()))
             {
+                // FunctionType is not primitive, so unlikely to be here
                 return GraphWalkFilterResult.REJECT_AND_STOP;
             }
             return GraphWalkFilterResult.ACCEPT_AND_CONTINUE;
         }).forEach(serializationCollector::collectInstanceForSerialization);
+
+        org.eclipse.collections.api.list.MutableList<CoreInstance> instancesToMove = Lists.mutable.empty();
+        org.eclipse.collections.api.list.MutableList<CoreInstance> forceMoveInstances = Lists.mutable.empty();
+        org.eclipse.collections.api.list.MutableList<String> forceMoveTargetIds = Lists.mutable.empty();
+
+        serializationCollector.instancesForSerialization.forEachKeyValue((classifierId, instances) ->
+        {
+            instances.removeIf(instance ->
+            {
+                String currentClassifierId = buildClassifierId(instance);
+                if (!currentClassifierId.equals(classifierId))
+                {
+                    instancesToMove.add(instance);
+                    return true;
+                }
+                return false;
+            });
+        });
+        instancesToMove.forEach(serializationCollector::collectInstanceForSerialization);
+
+        for (int i = 0; i < forceMoveInstances.size(); i++)
+        {
+            CoreInstance instance = forceMoveInstances.get(i);
+            String targetId = forceMoveTargetIds.get(i);
+            serializationCollector.instancesForSerialization.getIfAbsentPut(targetId, Lists.mutable::empty).add(instance);
+        }
     }
 }

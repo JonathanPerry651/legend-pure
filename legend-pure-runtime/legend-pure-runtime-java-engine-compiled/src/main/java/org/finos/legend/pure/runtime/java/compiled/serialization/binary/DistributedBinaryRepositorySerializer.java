@@ -73,6 +73,7 @@ class DistributedBinaryRepositorySerializer extends DistributedBinaryGraphSerial
         CoreInstance refUsageClassifier = this.processorSupport.package_getByUserPath(M3Paths.ReferenceUsage);
         MutableSet<CoreInstance> stubClassifiers = AnyStubHelper.getStubClasses(this.processorSupport, Sets.mutable.empty());
         MutableSet<CoreInstance> primitiveTypes = PrimitiveUtilities.getPrimitiveTypes(this.processorSupport).toSet();
+        
         this.runtime.getSourceRegistry().getSources().asLazy()
                 .select(this::isInRepository)
                 .flatCollect(source -> GraphNodeIterable.builder()
@@ -92,7 +93,7 @@ class DistributedBinaryRepositorySerializer extends DistributedBinaryGraphSerial
                             {
                                 return GraphWalkFilterResult.REJECT_AND_CONTINUE;
                             }
-                            if (primitiveTypes.contains(classifier) || isFromDifferentSource(instance, source))
+                            if (primitiveTypes.contains(classifier) || (isFromDifferentSource(instance, source) && !"FunctionType".equals(classifier.getName())))
                             {
                                 return GraphWalkFilterResult.REJECT_AND_STOP;
                             }
@@ -100,6 +101,7 @@ class DistributedBinaryRepositorySerializer extends DistributedBinaryGraphSerial
                         })
                         .build())
                 .forEach(serializationCollector::collectInstanceForSerialization);
+
         collectPackageUpdates(serializationCollector);
 
         PackageTreeIterable.newRootPackageTreeIterable(this.runtime.getModelRepository(), false)
