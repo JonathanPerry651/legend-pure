@@ -3,7 +3,23 @@ load("//legend-pure:pure_test.bzl", "pure_test")
 
 java_library(
     name = "legend-pure-runtime-java-extension-interpreted-store-relational",
-    srcs = glob(["src/main/java/**/*.java"]),
+    srcs = [
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/store/relational/interpreted/RelationalExtensionInterpreted.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/store/relational/interpreted/natives/AbstractFetchDbMetadata.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/store/relational/interpreted/natives/CreateTempTable.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/store/relational/interpreted/natives/DropTempTable.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/store/relational/interpreted/natives/ExecuteInDb.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/store/relational/interpreted/natives/FetchDbColumnsMetadata.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/store/relational/interpreted/natives/FetchDbImportedKeysMetaData.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/store/relational/interpreted/natives/FetchDbPrimaryKeysMetaData.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/store/relational/interpreted/natives/FetchDbSchemasMetadata.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/store/relational/interpreted/natives/FetchDbTablesMetadata.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/store/relational/interpreted/natives/LoadCsvToDbTable.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/store/relational/interpreted/natives/LoadValuesToDbTable.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/store/relational/interpreted/natives/LoadValuesToDbTableNew.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/store/relational/interpreted/natives/LogActivities.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/store/relational/interpreted/natives/SqlFunction.java",
+    ],
     resources = glob(["src/main/resources/**/*"]),
     visibility = ["//visibility:public"],
     deps = [

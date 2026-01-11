@@ -5,7 +5,10 @@ load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_par")
 
 java_library(
     name = "m2-dsl-diagram-pure-boot",
-    srcs = glob(["src/main/java/**/*.java"]),
+    srcs = [
+        "src/main/java/org/finos/legend/pure/code/core/DiagramCodeRepositoryProvider.java",
+        "src/main/java/org/finos/legend/pure/m2/dsl/diagram/M2DiagramPaths.java",
+    ],
     resources = glob(["src/main/resources/**/*"]),
     visibility = ["//visibility:public"],
     deps = [

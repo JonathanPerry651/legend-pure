@@ -14,7 +14,16 @@ antlr_gen(
 
 java_library(
     name = "legend-pure-m2-dsl-path-grammar",
-    srcs = glob(["src/main/java/**/*.java"]) + [":antlr_gen"],
+    srcs = [
+        "src/main/java/org/finos/legend/pure/m2/inlinedsl/path/NavigationPath.java",
+        "src/main/java/org/finos/legend/pure/m2/inlinedsl/path/PathMilestoningDatesVarNamesExtractor.java",
+        "src/main/java/org/finos/legend/pure/m2/inlinedsl/path/parser/NavigationGraphBuilder.java",
+        "src/main/java/org/finos/legend/pure/m2/inlinedsl/path/parser/NavigationParser.java",
+        "src/main/java/org/finos/legend/pure/m2/inlinedsl/path/processor/PathProcessor.java",
+        "src/main/java/org/finos/legend/pure/m2/inlinedsl/path/unloader/PathUnbind.java",
+        "src/main/java/org/finos/legend/pure/m2/inlinedsl/path/validation/PathValidator.java",
+        "src/main/java/org/finos/legend/pure/m2/inlinedsl/path/validation/PathVisibilityValidator.java",
+    ] + [":antlr_gen"],
     resources = glob(["src/main/resources/**/*"]),
     visibility = ["//visibility:public"],
     deps = [
@@ -29,10 +38,15 @@ java_library(
 
 java_library(
     name = "test_utils",
-    srcs = glob(
-        ["src/test/java/**/*.java"],
-        exclude = ["src/test/java/org/finos/legend/pure/m2/inlinedsl/path/incremental/TestPureRuntimePath.java"],
-    ),
+    srcs = [
+        "src/test/java/org/finos/legend/pure/m2/inlinedsl/path/AbstractTestMatch.java",
+        "src/test/java/org/finos/legend/pure/m2/inlinedsl/path/TestDSLCompilation.java",
+        "src/test/java/org/finos/legend/pure/m2/inlinedsl/path/TestPathParsing.java",
+        "src/test/java/org/finos/legend/pure/m2/inlinedsl/path/TestVisibilityInPath.java",
+        "src/test/java/org/finos/legend/pure/m2/inlinedsl/path/inference/TestFunctionTypeInferenceInPath.java",
+        "src/test/java/org/finos/legend/pure/m2/inlinedsl/path/milestoning/TestMilestonedPropertyUsageInFunctonExpressionsWithPath.java",
+        "src/test/java/org/finos/legend/pure/m2/inlinedsl/path/milestoning/TestMilestonedPropertyUsageInPaths.java",
+    ],
     visibility = ["//visibility:public"],
     deps = [
         ":legend-pure-m2-dsl-path-grammar",

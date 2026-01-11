@@ -28,7 +28,11 @@ java_binary(
 legend_java_library(
     name = "legend-pure-runtime-java-extension-compiled-dsl-tds",
     src_root = "legend-pure/legend-pure-dsl/legend-pure-dsl-tds/legend-pure-runtime-java-extension-compiled-dsl-tds/src/main/java",
-    srcs = glob(["src/main/java/**/*.java"]),
+    srcs = [
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/dsl/tds/compiled/TDSExtensionCompiled.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/dsl/tds/compiled/TDSNativeImplementation.java",
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/dsl/tds/compiled/natives/StringToTDS.java",
+    ],
     model_name = "TDS",
     model_factory_class = "org.finos.legend.pure.m2.inlinedsl.tds.TDSExtension",
     model_srcs = ["//legend-pure/legend-pure-dsl/legend-pure-dsl-tds/legend-pure-m2-dsl-tds-pure:pure_gen"],

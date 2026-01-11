@@ -5,7 +5,10 @@ load("//tools/build_rules:pure_generation.bzl", "pure_model_generation")
 
 java_library(
     name = "m2-dsl-store-pure-boot",
-    srcs = glob(["src/main/java/**/*.java"]),
+    srcs = [
+        "src/main/java/org/finos/legend/pure/code/core/StoreCodeRepositoryProvider.java",
+        "src/main/java/org/finos/legend/pure/m2/dsl/store/M2StorePaths.java",
+    ],
     resources = glob(["src/main/resources/**/*"]),
     visibility = ["//visibility:public"],
     deps = [

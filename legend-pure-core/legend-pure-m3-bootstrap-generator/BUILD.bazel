@@ -3,7 +3,12 @@ load("@rules_java//java:java_test.bzl", "java_test")
 
 java_library(
     name = "legend-pure-m3-bootstrap-generator",
-    srcs = glob(["src/main/java/**/*.java"]),
+    srcs = [
+        "src/main/java/org/finos/legend/pure/m3/bootstrap/generator/CoreInstanceGenerator.java",
+        "src/main/java/org/finos/legend/pure/m3/bootstrap/generator/M3ToJavaGenerator.java",
+        "src/main/java/org/finos/legend/pure/m3/bootstrap/generator/StubDef.java",
+        "src/main/java/org/finos/legend/pure/m3/tools/JavaTools.java",
+    ],
     visibility = ["//visibility:public"],
     deps = [
         "//legend-pure/legend-pure-core/legend-pure-m4",

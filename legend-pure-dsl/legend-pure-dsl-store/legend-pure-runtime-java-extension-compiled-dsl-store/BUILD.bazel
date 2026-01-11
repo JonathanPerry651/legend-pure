@@ -39,6 +39,7 @@ legend_java_library(
         "//legend-pure/legend-pure-core/legend-pure-m4",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure:m2-dsl-store-pure-gen",
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
+        ":m3-store-gen-lib",
         "@legend_maven//:org_eclipse_collections_eclipse_collections",
         "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
     ],
@@ -114,7 +115,9 @@ java_library(
         ":extract_store_registry",
         ":generate_store_m3_instances",
         ":generate_store_sources",
-    ] + glob(["src/main/java/**/*.java"]),
+    ] + [
+        "src/main/java/org/finos/legend/pure/runtime/java/extension/dsl/mapping/compiled/StoreExtensionCompiled.java",
+    ],
     javacopts = [
         "-Xep:IdentityBinaryExpression:OFF",
         "-Xep:IsInstanceIncompatibleType:OFF",
