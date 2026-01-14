@@ -1,7 +1,6 @@
 load("@rules_java//java:java_binary.bzl", "java_binary")
 load("@rules_java//java:java_library.bzl", "java_library")
-load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_par")
-load("//tools/build_rules:pure_generation.bzl", "pure_model_generation")
+load("//tools/build_rules:pure_generation.bzl", "pure_model_generation", "pure_par")
 
 java_library(
     name = "m2-dsl-tds-pure-boot",
@@ -39,19 +38,24 @@ pure_model_generation(
 )
 
 java_library(
-    name = "legend-pure-m2-dsl-tds-pure",
+    name = "m2-dsl-tds-pure-gen",
     srcs = [":pure_gen"],
     visibility = ["//visibility:public"],
-    exports = [
-        ":m2-dsl-tds-pure-boot",
-        ":platform_dsl_tds_metadata_lib",
-    ],
     deps = [
         ":m2-dsl-tds-pure-boot",
         "//legend-pure/legend-pure-core/legend-pure-m3-core",
         "//legend-pure/legend-pure-core/legend-pure-m4",
         "@legend_maven//:org_eclipse_collections_eclipse_collections",
         "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+)
+
+java_library(
+    name = "legend-pure-m2-dsl-tds-pure",
+    visibility = ["//visibility:public"],
+    exports = [
+        ":m2-dsl-tds-pure-boot",
+        ":m2-dsl-tds-pure-gen",
         ":platform_dsl_tds_metadata_lib",
     ],
 )
@@ -70,21 +74,16 @@ genrule(
     visibility = ["//visibility:public"],
 )
 
-java_binary(
-    name = "PureJarGenerator",
-    main_class = "org.finos.legend.pure.m3.generator.par.PureJarGenerator",
-    visibility = ["//visibility:public"],
-    runtime_deps = [
-        ":m2-dsl-tds-pure-boot",
-        "//legend-pure/legend-pure-core/legend-pure-m3-core",
-    ],
-)
 
 pure_par(
     name = "pure_platform_dsl_tds_par",
     out = "pure-platform_dsl_tds.par",
     repo_name = "platform_dsl_tds",
-    tool = ":PureJarGenerator",
+    deps = [
+        ":m2-dsl-tds-pure-boot",
+        ":legend-pure-m2-dsl-tds-pure",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+    ],
     visibility = ["//visibility:public"],
 )
 

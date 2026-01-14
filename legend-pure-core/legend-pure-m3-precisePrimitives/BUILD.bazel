@@ -1,7 +1,48 @@
 load("@rules_java//java:defs.bzl", "java_binary", "java_library", "java_test")
-load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_par")
+load("//tools/build_rules:pure_generation.bzl", "pure_model_generation", "pure_par")
 
-package(default_visibility = ["//visibility:public"])
+java_binary(
+    name = "M3CoreInstanceGenerator",
+    main_class = "org.finos.legend.pure.m3.generator.bootstrap.M3CoreInstanceGenerator",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        ":precisePrimitives-base",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+    ],
+)
+
+pure_model_generation(
+    name = "pure_gen",
+    srcs = glob(["src/main/resources/**/*.pure"]),
+    model_name = "PrecisePrimitives",
+    source_path = "/platform_precise_primitives/precisePrimitives.pure",
+    tool = ":M3CoreInstanceGenerator",
+    visibility = ["//visibility:public"],
+)
+
+java_library(
+    name = "precisePrimitives-base-gen",
+    srcs = [":pure_gen"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":precisePrimitives-base",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+)
+
+java_library(
+    name = "legend-pure-m3-precisePrimitives",
+    visibility = ["//visibility:public"],
+    exports = [
+        ":precisePrimitives-base",
+        ":precisePrimitives-base-gen",
+        ":pure_platform_precise_primitives_par_lib",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+    ],
+)
 
 java_library(
     name = "precisePrimitives-base",
@@ -17,36 +58,25 @@ java_library(
     ],
 )
 
-java_library(
-    name = "legend-pure-m3-precisePrimitives",
-    exports = [
-        ":precisePrimitives-base",
-        ":pure_platform_precise_primitives_par_lib",
-        "//legend-pure/legend-pure-core/legend-pure-m3-core",
-    ],
-)
 
 # Local generator binary that includes precisePrimitives resources on the classpath
-java_binary(
-    name = "PureJarGenerator",
-    main_class = "org.finos.legend.pure.m3.generator.par.PureJarGenerator",
-    runtime_deps = [
-        ":precisePrimitives-base",
-        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-base",
-    ],
-)
 
 pure_par(
     name = "pure_platform_precise_primitives_par",
     out = "pure-platform_precise_primitives.par",
     repo_name = "platform_precise_primitives",
-    tool = ":PureJarGenerator",
+    deps = [
+        ":precisePrimitives-base",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+    ],
+    visibility = ["//visibility:public"],
 )
 
 java_library(
     name = "pure_platform_precise_primitives_par_lib",
     resource_strip_prefix = "legend-pure/legend-pure-core/legend-pure-m3-precisePrimitives",
     resources = [":pure_platform_precise_primitives_par"],
+    visibility = ["//visibility:public"],
 )
 
 java_test(

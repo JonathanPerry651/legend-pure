@@ -173,6 +173,7 @@ java_binary(
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
         "//legend-pure/legend-pure-store/legend-pure-store-relational/legend-pure-m2-store-relational-pure",
         "//legend-pure/legend-pure-store/legend-pure-store-relational/legend-pure-m2-store-relational-pure:pure_platform_store_relational_par_lib",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure:store-compiled-extension",
         "@legend_maven//:org_eclipse_collections_eclipse_collections",
         "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
     ],

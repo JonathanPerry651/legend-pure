@@ -65,6 +65,30 @@ public class M3CoreInstanceGenerator
         runtime.loadAndCompileCore();
         runtime.loadAndCompileSystem();
 
+        if (filePaths != null && filePaths.notEmpty())
+        {
+            String path = filePaths.getFirst();
+            if (path != null && path.startsWith("/"))
+            {
+                int secondSlash = path.indexOf('/', 1);
+                if (secondSlash > 1)
+                {
+                    String repoName = path.substring(1, secondSlash);
+                    if (!"platform".equals(repoName) && !"system".equals(repoName))
+                    {
+                        try
+                        {
+                            runtime.loadAndCompile(repoName);
+                        }
+                        catch (Exception e)
+                        {
+                             System.out.println("Warning: Could not load repository '" + repoName + "': " + e.getMessage());
+                        }
+                    }
+                }
+            }
+        }
+
         M3ToJavaGenerator m3ToJavaGenerator = generator(outputDir, factoryNamePrefix, repository);
         m3ToJavaGenerator.generate(repository, filePaths, fileNamePrefix);
 

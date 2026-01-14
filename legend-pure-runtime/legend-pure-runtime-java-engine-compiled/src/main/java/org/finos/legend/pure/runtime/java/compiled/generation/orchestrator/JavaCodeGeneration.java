@@ -219,6 +219,7 @@ public class JavaCodeGeneration
         log.debug("  Extra repositories: " + extraRepositories);
         log.debug("  Generation type: " + generationType);
         log.debug("  Generate External API: '" + addExternalAPI + "' in package '" + externalAPIPackage + "'");
+        log.info("  preventJavaCompilation: " + preventJavaCompilation);
 
         try
         {

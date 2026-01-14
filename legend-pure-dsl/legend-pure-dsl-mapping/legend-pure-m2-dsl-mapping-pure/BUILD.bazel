@@ -1,7 +1,6 @@
 load("@rules_java//java:java_binary.bzl", "java_binary")
 load("@rules_java//java:java_library.bzl", "java_library")
-load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_par")
-load("//tools/build_rules:pure_generation.bzl", "pure_model_generation")
+load("//tools/build_rules:pure_generation.bzl", "pure_model_generation", "pure_par")
 
 java_library(
     name = "m2-dsl-mapping-pure-boot",
@@ -78,22 +77,17 @@ genrule(
     visibility = ["//visibility:public"],
 )
 
-java_binary(
-    name = "PureJarGenerator",
-    main_class = "org.finos.legend.pure.m3.generator.par.PureJarGenerator",
-    visibility = ["//visibility:public"],
-    runtime_deps = [
-        ":m2-dsl-mapping-pure-boot",
-        "//legend-pure/legend-pure-core/legend-pure-m3-core",
-        "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure",
-    ],
-)
 
 pure_par(
     name = "pure_platform_dsl_mapping_par",
     out = "pure-platform_dsl_mapping.par",
     repo_name = "platform_dsl_mapping",
-    tool = ":PureJarGenerator",
+    deps = [
+        ":m2-dsl-mapping-pure-boot",
+        ":m2-dsl-mapping-pure-gen",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure",
+    ],
     visibility = ["//visibility:public"],
 )
 

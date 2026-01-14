@@ -1,6 +1,7 @@
 load("@rules_java//java:defs.bzl", "java_library")
 load("@rules_java//java:java_binary.bzl", "java_binary")
-load(":pure.bzl", "PURE_PLATFORM_VERSION", "pure_antlr_gen", "pure_generator", "pure_par", "pure_pct_report")
+load(":pure.bzl", "pure_antlr_gen", "pure_generator", "pure_pct_report")
+load("//tools/build_rules:pure_generation.bzl", "pure_par", "PURE_PLATFORM_VERSION")
 
 # 2b. Platform Properties Generation
 genrule(
@@ -165,25 +166,37 @@ java_library(
 # 6. Final Library
 load("//tools/build_rules:java_validation.bzl", "validated_java_library")
 
-validated_java_library(
+java_library(
     name = "legend-pure-m3-core",
-    srcs = [
-        ":lazy_gen",
-        ":other_gen",
-    ],
+    srcs = [],
     javacopts = [
         "-Xep:ComparableType:OFF",
     ],
     visibility = ["//visibility:public"],
     exports = [
         ":m3-core-base",
-        ":pct_reports_lib",
-    ],
-    deps = [
-        ":m3-core-base",
+        ":m3-core-gen",
         ":pct_reports_lib",
         "//legend-pure/legend-pure-core/legend-pure-m4",
         "@legend_maven//:org_antlr_antlr4_runtime",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+)
+
+java_library(
+    name = "m3-core-gen",
+    srcs = [
+        ":lazy_gen",
+        ":other_gen",
+    ],
+    visibility = ["//visibility:public"],
+    javacopts = [
+        "-Xep:ComparableType:OFF",
+    ],
+    deps = [
+        ":m3-core-base",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
         "@legend_maven//:org_eclipse_collections_eclipse_collections",
         "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
     ],
@@ -352,7 +365,12 @@ pure_par(
     name = "platform_par",
     out = "pure-platform.par",
     repo_name = "platform",
-    tool = ":PureJarGenerator",
+    deps = [
+        ":m3-core-gen",
+        ":m3-core-base",
+        ":m3_core_resources",
+        ":platform_properties_lib",
+    ],
     visibility = ["//visibility:public"],
 )
 

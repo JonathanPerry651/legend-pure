@@ -1,5 +1,5 @@
 load("@rules_java//java:defs.bzl", "java_binary", "java_library")
-load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_par")
+load("//tools/build_rules:pure_generation.bzl", "pure_par")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -28,7 +28,10 @@ pure_par(
     name = "pure_platform_dsl_path_par",
     out = "pure-platform_dsl_path.par",
     repo_name = "platform_dsl_path",
-    tool = ":PureJarGenerator",
+    deps = [
+        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-base",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-path/legend-pure-m2-dsl-path-pure",
+    ],
 )
 
 java_library(

@@ -1,6 +1,7 @@
 load("@rules_java//java:defs.bzl", "java_common")
 load("//tools:zip_tree_artifacts.bzl", "zip_tree_artifacts")
 
+
 def _pure_antlr_gen_impl(ctx):
     # Create the antlr_flat output directory structure within bazel-out
     # We can't really "mkdir" in a rule in the same way, we define outputs.
@@ -194,66 +195,6 @@ pure_generator = rule(
     },
 )
 
-PURE_PLATFORM_VERSION = "0.0.0-SNAPSHOT"
-
-def _pure_par_impl(ctx):
-    # Used for platform_par
-    # cmd = "$(location :PureJarGenerator) 0.0.0-SNAPSHOT platform $(@D)"
-
-    tool = ctx.executable.tool
-    output = ctx.outputs.out
-    version = ctx.attr.version
-    repo_name = ctx.attr.repo_name
-
-    # We need to handle generation into $(@D) which mimics genrule behavior.
-    # PureJarGenerator takes (version, repoName, outputDir)
-    # It generates "pure-[repoName].par" in outputDir.
-
-    # Since our rule declares the output file explicitly, we should tell the generator
-    # to generate it there, or generate to a temp dir and move it.
-
-    # We construct the expected generated filename based on repo_name
-    expected_par_name = "pure-{}.par".format(repo_name)
-
-    cmd = """
-    set -e
-    # Create a temp dir
-    mkdir -p par_tmp_comp
-    
-    {tool_path} {version} {repo_name} par_tmp_comp
-    
-    # Move the expected result file to the declared output path
-    # Expected: pure-{repo_name}.par
-    mv par_tmp_comp/{expected_par_name} {output_path}
-    
-    rm -rf par_tmp_comp
-    """.format(
-        tool_path = tool.path,
-        output_path = output.path,
-        version = version,
-        repo_name = repo_name,
-        expected_par_name = expected_par_name,
-    )
-
-    ctx.actions.run_shell(
-        inputs = [],  # No source inputs for this one? It reads embedded resources?
-        outputs = [output],
-        tools = [tool],
-        command = cmd,
-        mnemonic = "PureParGen",
-    )
-
-    return [DefaultInfo(files = depset([output]))]
-
-pure_par = rule(
-    implementation = _pure_par_impl,
-    attrs = {
-        "tool": attr.label(mandatory = True, executable = True, cfg = "exec"),
-        "out": attr.output(mandatory = True),
-        "version": attr.string(default = PURE_PLATFORM_VERSION),
-        "repo_name": attr.string(mandatory = True),
-    },
-)
 
 def _pure_report_impl(ctx):
     tool = ctx.executable.tool

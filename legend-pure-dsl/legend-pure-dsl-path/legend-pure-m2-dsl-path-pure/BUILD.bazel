@@ -35,22 +35,29 @@ pure_model_generation(
     model_name = "Path",
     source_path = "/platform_dsl_path/path.pure",
     tool = ":M3CoreInstanceGenerator",
+    visibility = ["//visibility:public"],
 )
 
 java_library(
-    name = "legend-pure-m2-dsl-path-pure",
+    name = "m2-dsl-path-pure-gen",
     srcs = [":pure_gen"],
     visibility = ["//visibility:public"],
-    exports = [
-        ":m2-dsl-path-pure-boot",
-        ":platform_dsl_path_metadata_lib",
-    ],
     deps = [
         ":m2-dsl-path-pure-boot",
         "//legend-pure/legend-pure-core/legend-pure-m3-core",
         "//legend-pure/legend-pure-core/legend-pure-m4",
         "@legend_maven//:org_eclipse_collections_eclipse_collections",
         "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+)
+
+java_library(
+    name = "legend-pure-m2-dsl-path-pure",
+    visibility = ["//visibility:public"],
+    exports = [
+        ":m2-dsl-path-pure-boot",
+        ":m2-dsl-path-pure-gen",
+        ":platform_dsl_path_metadata_lib",
     ],
 )
 

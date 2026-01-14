@@ -7,7 +7,7 @@ java_binary(
     main_class = "org.finos.legend.pure.runtime.java.compiled.generation.orchestrator.JavaModelFactoryGenerator",
     visibility = ["//visibility:private"],
     runtime_deps = [
-        ":m3-store-gen-lib",
+
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-grammar",
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
     ],
@@ -39,7 +39,7 @@ legend_java_library(
         "//legend-pure/legend-pure-core/legend-pure-m4",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure:m2-dsl-store-pure-gen",
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
-        ":m3-store-gen-lib",
+
         "@legend_maven//:org_eclipse_collections_eclipse_collections",
         "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
     ],
@@ -60,11 +60,11 @@ java_binary(
         "//legend-pure/legend-pure-core/legend-pure-m3-core",
         "//legend-pure/legend-pure-core/legend-pure-m4",
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure",
+        "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure:store-compiled-extension",
         # PAR needed?
         "//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure:pure_platform_dsl_store_par_lib",
         "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
-        ":m3-store-gen-lib",
-        ":m3-store-extension-lib",
+
     ],
 )
 
@@ -86,38 +86,14 @@ pure_jar_extract(
     src_jar = ":java_gen_model_gen.srcjar",
 )
 
-pure_generator(
-    name = "generate_store_m3_instances",
-    srcs = ["//legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-m2-dsl-store-pure:pure_platform_dsl_store_par_lib"],
-    out = "store_m3_instances.srcjar",
-    args_list = [
-        "M3Store",
-        "/platform_dsl_store/grammar/runtime.pure,/platform_dsl_store/grammar/store.pure",
-    ],
-    tool = ":M3CoreInstanceGenerator_Store",
-)
-
-java_library(
-    name = "m3-store-gen-lib",
-    srcs = [":generate_store_m3_instances"],
-    visibility = ["//visibility:private"],
-    deps = [
-        "//legend-pure/legend-pure-core/legend-pure-m3-core:m3-core-base",
-        "//legend-pure/legend-pure-core/legend-pure-m4",
-        "@legend_maven//:org_eclipse_collections_eclipse_collections",
-        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
-    ],
-)
 
 java_library(
     name = "legend-pure-runtime-java-extension-compiled-dsl-store",
     srcs = [
         ":extract_store_registry",
-        ":generate_store_m3_instances",
+
         ":generate_store_sources",
-    ] + [
-        "src/main/java/org/finos/legend/pure/runtime/java/extension/dsl/mapping/compiled/StoreExtensionCompiled.java",
-    ],
+    ] + glob(["src/main/java/**/*.java"], exclude=["**/M3StoreExtensionCompiled.java", "**/StoreExtensionCompiled.java"], allow_empty=True),
     javacopts = [
         "-Xep:IdentityBinaryExpression:OFF",
         "-Xep:IsInstanceIncompatibleType:OFF",
@@ -134,20 +110,7 @@ java_library(
         "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
         "@legend_maven//:org_eclipse_collections_eclipse_collections",
         "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
-        ":m3-store-extension-lib",
         ":java_gen_metadata",
     ],
 )
 
-java_library(
-    name = "m3-store-extension-lib",
-    srcs = ["src/main/java/org/finos/legend/pure/runtime/java/extension/dsl/mapping/compiled/M3StoreExtensionCompiled.java"],
-    resources = glob(["src/main/resources/m3_store_extension/**/*"]),
-    resource_strip_prefix = "legend-pure/legend-pure-dsl/legend-pure-dsl-store/legend-pure-runtime-java-extension-compiled-dsl-store/src/main/resources/m3_store_extension",
-    deps = [
-        ":m3-store-gen-lib",
-        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
-        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
-    ],
-    visibility = ["//visibility:private"],
-)

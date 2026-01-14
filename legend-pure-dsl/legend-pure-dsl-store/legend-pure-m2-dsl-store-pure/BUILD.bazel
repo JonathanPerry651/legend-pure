@@ -1,7 +1,6 @@
 load("@rules_java//java:java_binary.bzl", "java_binary")
 load("@rules_java//java:java_library.bzl", "java_library")
-load("//legend-pure/legend-pure-core/legend-pure-m3-core:pure.bzl", "pure_par")
-load("//tools/build_rules:pure_generation.bzl", "pure_model_generation")
+load("//tools/build_rules:pure_generation.bzl", "pure_model_generation", "pure_par")
 
 java_library(
     name = "m2-dsl-store-pure-boot",
@@ -9,7 +8,7 @@ java_library(
         "src/main/java/org/finos/legend/pure/code/core/StoreCodeRepositoryProvider.java",
         "src/main/java/org/finos/legend/pure/m2/dsl/store/M2StorePaths.java",
     ],
-    resources = glob(["src/main/resources/**/*"]),
+    resources = glob(["src/main/resources/**/*"], exclude = ["src/main/resources/META-INF/services/org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtension"]),
     visibility = ["//visibility:public"],
     deps = [
         "//legend-pure/legend-pure-core/legend-pure-m3-core",
@@ -38,13 +37,38 @@ pure_model_generation(
     visibility = ["//visibility:public"],
 )
 
+pure_model_generation(
+    name = "runtime_gen",
+    srcs = glob(["src/main/resources/**/*.pure"]),
+    model_name = "Runtime",
+    source_path = "/platform_dsl_store/grammar/runtime.pure",
+    tool = ":M3CoreInstanceGenerator",
+    visibility = ["//visibility:public"],
+)
+
 java_library(
     name = "m2-dsl-store-pure-gen",
-    srcs = [":pure_gen"],
+    srcs = [":pure_gen", ":runtime_gen"] + glob(["src/main/java/**/*.java"], exclude = ["**/StoreExtensionCompiled.java"]),
+    resources = ["src/main/resources/META-INF/services/org.finos.legend.pure.m4.coreinstance.factory.CoreInstanceFactory"],
     visibility = ["//visibility:public"],
     deps = [
         "//legend-pure/legend-pure-core/legend-pure-m3-core",
         "//legend-pure/legend-pure-core/legend-pure-m4",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections",
+        "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
+    ],
+)
+
+java_library(
+    name = "store-compiled-extension",
+    srcs = ["src/main/java/org/finos/legend/pure/runtime/java/extension/dsl/store/compiled/StoreExtensionCompiled.java"],
+    resources = ["src/main/resources/META-INF/services/org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtension"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":m2-dsl-store-pure-gen",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+        "//legend-pure/legend-pure-core/legend-pure-m4",
+        "//legend-pure/legend-pure-runtime/legend-pure-runtime-java-engine-compiled",
         "@legend_maven//:org_eclipse_collections_eclipse_collections",
         "@legend_maven//:org_eclipse_collections_eclipse_collections_api",
     ],
@@ -74,21 +98,16 @@ genrule(
     visibility = ["//visibility:public"],
 )
 
-java_binary(
-    name = "PureJarGenerator",
-    main_class = "org.finos.legend.pure.m3.generator.par.PureJarGenerator",
-    visibility = ["//visibility:public"],
-    runtime_deps = [
-        ":m2-dsl-store-pure-boot",
-        "//legend-pure/legend-pure-core/legend-pure-m3-core",
-    ],
-)
 
 pure_par(
     name = "pure_platform_dsl_store_par",
     out = "pure-platform_dsl_store.par",
     repo_name = "platform_dsl_store",
-    tool = ":PureJarGenerator",
+    deps = [
+        ":m2-dsl-store-pure-boot",
+        ":m2-dsl-store-pure-gen",
+        "//legend-pure/legend-pure-core/legend-pure-m3-core",
+    ],
     visibility = ["//visibility:public"],
 )
 
